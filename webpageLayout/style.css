@@ -12,6 +12,14 @@ h2 {
 	font-weight: normal;
 }
 
+h3 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	position: absolute;	
+	left: 270px;
+	top: 380px;
+}
+
 p {
 	font-family: Verdana, sans-serif;
 	font-size: 15px;
@@ -53,8 +61,106 @@ a:visited {
 	color: #000000;
 }
 
-img {
+img.platypus {
 	position: absolute;
 	top: 25px;
 	left: 10px;
+}
+
+img.poker {
+	position: absolute;
+	left: 200px;
+}
+
+div.playingArea {
+	position: absolute;
+	width: 50%;
+	left: 25%;
+	height: 700px;
+	border: 5px solid gray;
+}
+
+img.p1c1 {
+	position: absolute;
+	left: 38%;
+	top: 30px;
+}
+
+img.p1c2 {
+	position: absolute;
+	left: 52%;
+	top: 30px;
+}
+
+h4 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	text-align: center;
+	top: 1px;
+}
+
+img.p2c1 {
+	position: absolute;
+	left: 5%;
+	top: 35%;
+}
+
+img.p2c2 {
+	position: absolute;
+	left: 5%;
+	top: 50%;
+}
+
+img.p4c1 {
+	position: absolute;
+	right: 5%;
+	top: 35%;
+}
+
+img.p4c2 {
+	position: absolute;
+	right: 5%;
+	top: 50%;
+}
+
+img.p3c1 {
+	position: absolute;
+	left: 38%;
+	bottom: 30px;
+}
+
+img.p3c2 {
+	position: absolute;
+	left: 52%;
+	bottom: 30px;
+}
+
+img.center1{
+	position: absolute;
+	left: 25%;
+	top: 40%;
+}
+
+img.center2{
+	position: absolute;
+	left: 35%;
+	top: 40%;
+}
+
+img.center3{
+	position: absolute;
+	left: 45%;
+	top: 40%;
+}
+
+img.center4{
+	position: absolute;
+	left: 55%;
+	top: 40%;
+}
+
+img.center5{
+	position: absolute;
+	left: 65%;
+	top: 40%;
 }
