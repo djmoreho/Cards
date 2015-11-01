@@ -23,5 +23,6 @@ site = Site(root)
 Create(root)
 
 # listen
-reactor.listenTCP(8080, site)
-reactor.run()
+if __name__ == "__main__":
+    reactor.listenTCP(8080, site)
+    reactor.run()
