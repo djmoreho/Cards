@@ -39,12 +39,11 @@ class GameState:
 
 	#draws a card from src to dest
 	def draw(self, dest, src):
-		deck.dealTwo(1, dest)
+		src.dealTo(1, dest)
 
 	#Takes bids from each player and stores in bidArr
 	#Players that fold are removed from further bids in same round
 	#  after bidding
-	#TODO check player money and actually deduct
 	def takeBids(self, bidArr, foldArr):
 		keepBidding = True
 		lastRaise = -1
