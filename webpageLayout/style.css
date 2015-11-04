@@ -28,7 +28,7 @@ h3 {
 	top: 380px;
 }
 
-p {
+p.aboutText {
 	font-family: Verdana, sans-serif;
 	font-size: 15px;
 	text-align: center;
@@ -82,8 +82,8 @@ img.poker {
 
 div.playingArea {
 	position: absolute;
-	width: 75%;
-	left: 12.5%;
+	width: 70%;
+	left: 15%;
 	height: 700px;
 	border: 5px solid gray;
 }
@@ -181,4 +181,53 @@ h4 {
 	position: absolute;
 	left: 65%;
 	top: 40%;
+}
+
+div.money {
+	position: absolute;
+	height: 250px;
+	border: 5px solid gray;
+	width: 12.5%;
+}
+
+h4 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	text-align: center;
+	font-weight: normal;
+}
+
+p.moneyLeft {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	text-align: left;
+	padding: 4px;
+	font-weight: normal;
+}
+
+div.bet {
+	position: absolute;
+	top: 500px;
+	width: 12.5%;
+	font-family: Verdana, sans-serif;
+}
+
+form.betting {
+	font-size:15px;
+}
+
+h5 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	font-weight: normal;
+}
+
+p.turn {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	font-weight: normal;
+}
+
+input {
+	width: 60px;
 }
