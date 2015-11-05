@@ -29,7 +29,7 @@ from twisted.internet import reactor
 class Site(Site):
     pass
 
-from CardResources import Home, Create
+from Resources.CardResources import Home, Create
 root = Home()
 site = Site(root)
 ## now load other resources
