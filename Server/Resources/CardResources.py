@@ -21,23 +21,36 @@ from twisted.web.util import redirectTo
 ### REACTOR
 from twisted.internet import reactor
 
-
-### API
-
+# Main Resource, deals with certain things that have to be setup
 class CardsResource(Resource):
 
     def render(self, request):
-        print "CR"
-        s = request.getSession()
-        print s
-        return Resource.render(self, request)
+        # make sure there is a session id cookie
+        cookie = request.getCookie("SID")
+        if cookie == None:
+            # give them a cookie
+            print "Setting cookie"
+            cookie = createCookie(request.getClientIP())
+            # SID - Session ID
+            print cookie
+            request.addCookie("platypus_id", cookie, time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time() + 3600 * 2)),
+                             secure = False)
+        else:
+            # ok we have a cookie
+        return Resource.render(self, request)        
 
+### API
 
 class API(CardsResource):
     '''Virtual Directory for api'''
     isLeaf = False
     def render_GET(self, request):
         return "<html><h1>API</h1></html>"
+
+    def render_POST(self, request):
+        print request.args
+        request.responseHeaders.addRawHeader("Content-Type", "text/html; charset=utf-8")
+        return str(request.args)
 
 
 class Users(CardsResource):
@@ -54,6 +67,8 @@ class Game(CardsResource):
 
 class PersistantExample(CardsResource):
     '''Gives an example of a persistant request'''
+    # does not exist on Safari until stopping browser / ending connection
+
     isLeaf = True
     def render_GET(self, request):
         log.msg("Ooooh a render request")
