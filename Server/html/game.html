@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="style.css">	
+	<title> Cards </title>
+</head>
+
+<body>
+	<div class="heading">
+		<h1> Cards </h1>
+		<img src="platypus.png" style="width:50px;height:50px" class="platypus">
+	</div>
+	<div class="navigation">
+		<ul>
+			<li><a href="homepage.html" style="text-decoration: none">Home</a></li>
+			<li><a href="rules.html" style="text-decoration: none">Rules</a></li>
+			<li><a href="highscores.html" style="text-decoration: none">High Scores</a></li>
+			<li><a href="about.html" style="text-decoration: none">About</a></li>
+		</ul>
+	</div>
+	<div class="texas">
+		<h2> Texas Hold 'Em </h2>
+		<div class="playingArea">
+			<!-- Player 1 Cards -->
+			<img src="playing-card-back.jpg" id = "p1" class="p1c1 vertical_Card">
+			<img src="playing-card-back.jpg" id = "p2" class="p1c2 vertical_Card">
+			<!-- Player 2 Cards -->
+			<img src="sidewayscard.jpg" class="p2c1 sideways_Card">
+			<img src="sidewayscard.jpg" class="p2c2 sideways_Card">
+			<!-- Player 3 Cards -->
+			<img src="playing-card-back.jpg" class="p3c1 vertical_Card">
+			<img src="playing-card-back.jpg" class="p3c2 vertical_Card">
+			<!-- Player 4 Cards -->
+			<img src="sidewayscard.jpg" class="p4c1 sideways_Card">
+			<img src="sidewayscard.jpg" class="p4c2 sideways_Card">
+			<img src="playing-card-back.jpg" class="center1 vertical_Card">
+			<img src="playing-card-back.jpg" class="center2 vertical_Card">
+			<img src="playing-card-back.jpg" class="center3 vertical_Card">
+			<img src="playing-card-back.jpg" class="center4 vertical_Card">
+			<img src="playing-card-back.jpg" class="center5 vertical_Card">
+		</div>	
+		<div class="money">
+			<h4> Money </h4>
+			<p class="moneyLeft"> Player 1: </p>
+			<p class="moneyLeft"> Player 2: </p>
+			<p class="moneyLeft"> Player 3: </p>
+			<p class="moneyLeft"> Player 4: </p>
+		</div>
+		<div class="bet">
+			<h5> Player 1's Turn </h5>
+			<p class="turn"> Money Left: </p>
+			<form class="betting"> 
+				Amount<br> 
+				<input type="text" name="amount" id="amount">
+				<input type="submit" value="Bet!">
+				<p></p>
+				<input type="submit" value="Call">
+			</form>
+		</div>
+	</div>
+
+
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+<p>AJAX</p>
+
+<button type="button" id ="rd" onclick="loadDoc()">Request data</button>
+
+<p id="demo"></p>
+
+<script>
+function loadDoc() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+    	
+        document.getElementById("demo").innerHTML = xhttp.responseText;
+        alert(xhttp.responseText);
+        j = JSON.parse(xhttp.responseText);
+        //alert(j["images"][0]);
+        //alert(j["images"][1]);
+        // class="p1c1 vertical_Card"
+        document.getElementById("p1").src = j["images"][0];
+        document.getElementById("p2").src = j["images"][1];
+        alert(xhttp.responseText);
+        
+    }
+  }
+  xhttp.open("POST", "api?type=pa&verb=draw", true);
+  xhttp.send();
+}
+</script>
+
+<script>
+document.getElementById("rd").click(); // Click on the checkbox
+</script>
+
+</body>
+</html>
+
