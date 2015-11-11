@@ -1,0 +1,12 @@
+API Documentation
+
+Type = pa
+Verb = ....
+...  = other details
+
+-----
+Return
+
+success = true | false  whether it worked
+Issue = "Some issues" if there is a success else blank
+.... = other details
