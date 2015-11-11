@@ -18,14 +18,23 @@
 			<li><a href="about.html" style="text-decoration: none">About</a></li>
 		</ul>
 	</div>
-	<div class="games">
-		<h2> Games </h2>
-		<a href="game.html"><img src="poker.jpg" style="width:200px;height:200px" class="poker"></a>
-		<h3> Poker </h3>
-		<a href="war.html"><img src="war.jpg" style="width:200px;height200px" class="war"></a>
-		<h6> War </h6>
+	<div class="war">
+		<h2> War </h2>
+		<div class="playingArea">
+			<img src="playing-card-back.jpg" class="player1">
+			<img src="playing-card-back.jpg" class="player2">
+		</div>
+		<div class="money">
+			<h4> Cards Left </h4>
+			<p class="cardsLeft" id="p1-cards"> Player 1: 0</p>
+			<p class="cardsLeft" id="p2-cards"> Player 2: 0</p>
+		</div>
+		<div class="flipCards">
+			<form class="flip">
+				<input type="submit" value="Flip Card">
+			</form>
+		</div>
 	</div>
 </body>
 
 </html>
-
