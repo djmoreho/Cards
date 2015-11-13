@@ -3,6 +3,9 @@
 <head>
 	<link rel="stylesheet" href="style.css">	
 	<title> Cards </title>
+        <script src="jquery-1.11.3.min.js"></script>
+        <script src="poker.js"></script>
+            
 </head>
 
 <body>
@@ -23,12 +26,12 @@
 		<div class="playingArea">
 			<img src="playing-card-back.jpg" class="p1c1 vertical_Card">
 			<img src="playing-card-back.jpg" class="p1c2 vertical_Card">
-			<img src="sidewayscard.jpg" class="p2c1 sideways_Card">
-			<img src="sidewayscard.jpg" class="p2c2 sideways_Card">
+			<img src="playing-card-back.jpg" class="p2c1 vertical_Card">
+			<img src="playing-card-back.jpg" class="p2c2 vertical_Card">
 			<img src="playing-card-back.jpg" class="p3c1 vertical_Card">
 			<img src="playing-card-back.jpg" class="p3c2 vertical_Card">
-			<img src="sidewayscard.jpg" class="p4c1 sideways_Card">
-			<img src="sidewayscard.jpg" class="p4c2 sideways_Card">
+			<img src="playing-card-back.jpg" class="p4c1 vertical_Card">
+			<img src="playing-card-back.jpg" class="p4c2 vertical_Card">
 			<img src="playing-card-back.jpg" class="center1 vertical_Card">
 			<img src="playing-card-back.jpg" class="center2 vertical_Card">
 			<img src="playing-card-back.jpg" class="center3 vertical_Card">
@@ -48,9 +51,9 @@
 			<form class="betting"> 
 				Amount<br> 
 				<input type="text" name="amount" id="amount">
-				<input type="submit" value="Bet!">
+                                <button type="button" onclick=raise(amount)>Raise</button>
 				<p></p>
-				<input type="submit" value="Call">
+                                <button type="button" onclick=call())>Call</button>
 			</form>
 		</div>
 	</div>

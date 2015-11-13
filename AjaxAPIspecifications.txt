@@ -1,0 +1,36 @@
+You can assign a single end point for all api calls.  Determine the procedures used by the "action" field.
+Send me the url of the endpoint when you set it up.
+ 
+
+SignIn POST(){
+Sent:{"action":"signup"}
+Received{"SignUpWorked":boolean}
+
+Isitready POST()
+Sent: {"action":"IsItReady"}
+Received: {"Ready":boolean true if game is ready/started}
+
+GetPlayerData  POST()
+Sent: {"action":"GetPlayerData"}
+Received:{"playerHand":Formatted String Of Player's Hand,
+		"playerNumber" = player index Number Used In The Backend}
+
+Update POST()
+sent:{"action":"Update"}
+Received:{Scores:[Array of player scores/remaining money using player indexies],"CurrentPlayerTurn":Current player turn represented by index,
+	   "Pot":Current Value Of Pot as an integer,"GameOver":boolean for gameover,"river":river represented as a sequence of cards(Single String)
+		"AllHands":Contents Of All player hands represented as a string(Ordered index 0 - 3)(Return only if game is over)
+		"RiverCount":Number of cards in the river revealed}
+
+Call POST()
+Sent:{"action":"Call"}
+Received:{worked:boolean if it worked}
+
+
+Raise POST()
+Sent:{"action":"Raise","value":Value of raise}
+Received:{"worked":boolean if it worked}
+
+Fold POST()
+Sent:{"action":"Fold"}
+Received:{"worked" boolean if it worked}
