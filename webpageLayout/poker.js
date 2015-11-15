@@ -3,8 +3,6 @@ src="jquery-1.11.3.min.js";
 var url ="";
 //All the other stuff
 var cardsPath = "card_pics/";
-var header = ["Accept: application/json","Content-Type: application/json"];
-var playerData = $.ajax(url, {"datatype":"json", "headers":header});
 var playerHand = playerData["playerHand"];
 var playerNumber = playerData["playerNumber"];
 var gameOver = false;
@@ -21,18 +19,21 @@ var loggedIn = false;
 var ready = false;
 
 function login(){
-        var redJSON=$.ajax(url, {"datatype":"json", "headers":header});     
-        return redJSON["SignUpWorked"]
+        var dataOut = {action:"signup"};
+        var redJSON=$.post(url, dataOut, function(){},"json");     
+        return redJSON["SignUpWorked"];
 }
 
 function isReady(){
-        var redJSON=$.ajax(url, {"datatype":"json", "headers":header});
+        var dataOut = {action:"IsItReady"};
+        var redJSON=$.post(url, dataOut, function(){},"json");
         return redJSON["Ready"];
 }
 
 function fold(){
-        if(currentPlayerTurn == playerNumber){
-            var caller=$.ajax(url, {"datatype":"json", "headers":header});
+        if (currentPlayerTurn === playerNumber && !folded){
+            var dataOut = {action:"Fold"};
+            var caller=$.post(url, dataOut, function(){},"json");
             if(caller["success"]){
                 folded = true;
             }
@@ -41,18 +42,20 @@ function fold(){
 }
 
 function call(){
-        var caller=$.ajax(url, {"datatype":"json", "headers":header});
+        var dataOut={action:"Call"};
+        $.post(url, dataOut, function(){},"json");
         refresh();
 }
 
 function raise(raiseAmount){
-        var caller=$.ajax(url, {"datatype":"json", "headers":header});
+        var dataOut={action:"Raise",value:raiseAmount};
+        $.post(url, dataOut, function(){},"json");
         refresh();
 }
 
 function getPlayerData(){
-        var caller=$.ajax(url, {"datatype":"json", "headers":header});
-        refresh();
+        var dataOut={action:"GetPlayerData"};
+        return $.post(url, dataOut, function(){},"json");
 }
 
 function theGame(){
@@ -64,7 +67,7 @@ function theGame(){
             ready = isReady();
         }
         
-        playerData = $.ajax(url, {"datatype":"json", "headers":header});
+        playerData = getPlayerData();
         playerHand = playerData["playerHand"];
         playerNumber = playerData["playerNumber"];
         while(!gameOver){
@@ -78,7 +81,7 @@ function reset(){
     var river3 = "BJ";
     var river4 = "BJ";
     var river5 = "BJ";
-    var playerData = $.ajax(url, {"datatype":"json", "headers":header});
+    var playerData = $.post(url, {"datatype":"json", "headers":header});
     var playerHand = playerData["hand"];
     var pot = 0;
     $(".p1c1").attr('src',"playing-card-back.jpg");
@@ -99,9 +102,10 @@ function reset(){
 }
 */
 function refresh(){
-    scoresJSON = $.ajax(url, {"datatype":"json", "headers":header});
+    var dataOut = {action:"Update"};
+    scoresJSON = $.post(url, dataOut, function(){},"json");;
     playerScores = scoresJSON["Scores"];
-    reveal = scoresJSON["allHands"]
+    reveal = scoresJSON["allHands"];
     pot = scoresJSON["Pot"];
     gameOver = scoresJSON["GameOver"];
     river = scoresJSON["river"];
@@ -145,23 +149,28 @@ function refresh(){
     //If the game is over, reveal all players hands
     if (gameOver) {
         Hands = ScoresJSON["AllHands"];
+        PlayerOneHand=[Hands.substr(0,2), Hands.substr(2,2)];
+        PlayerTwoHand=[Hands.substr(4,2), Hands.substr(6,2)];
+        PlayerThreeHand=[Hands.substr(8,2), Hands.substr(10,2)];
+        PlayerFourHand=[Hands.substr(12,2), Hands.substr(14,2)]
+        $(".p1c1").attr('src',cardsPath + playerOneHand[0] + ".png");
 
-        $(".p1c1").attr('src',cardsPath + playerOneHand.cards[0] + ".png");
+        $(".p1c2").attr('src',cardsPath + playerOneHand[1] + ".png");
 
-        $(".p1c2").attr('src',cardsPath + playerOneHand.cards[1] + ".png");
+        $(".p2c1").attr('src',cardsPath + playerTwoHand[0] + ".png");
 
-        $(".p2c1").attr('src',cardsPath + playerTwoHand.cards[0] + ".png");
+        $(".p2c2").attr('src',cardsPath + playerTwoHand[1] + ".png");
 
-        $(".p2c2").attr('src',cardsPath + playerTwoHand.cards[1] + ".png");
+        $(".p3c1").attr('src',cardsPath + playerThreeHand[0] + ".png");
 
-        $(".p3c1").attr('src',cardsPath + playerThreeHand.cards[0] + ".png");
+        $(".p3c2").attr('src',cardsPath + playerThreeHand[1] + ".png");
 
-        $(".p3c2").attr('src',cardsPath + playerThreeHand.cards[1] + ".png");
+        $(".p4c1").attr('src',cardsPath + playerFourHand[0] + ".png");
 
-        $(".p4c1").attr('src',cardsPath + playerFourHand.cards[0] + ".png");
-
-        $(".p4c2").attr('src',cardsPath + playerFourHand.cards[1] + ".png");
-        }
+        $(".p4c2").attr('src',cardsPath + playerFourHand[1] + ".png");
+        
+        
+    }
 }
 
 /*
