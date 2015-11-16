@@ -1,56 +1,61 @@
 src="jquery-1.11.3.min.js";
 //url the ajax stuff posts to
-var url ="";
+var url ="/api?game=poker&action=";
 //All the other stuff
 var cardsPath = "card_pics/";
 var playerHand = playerData["playerHand"];
 var playerNumber = playerData["playerNumber"];
 var gameOver = false;
 var currentPlayerTurn = 0;
-var bet = 0;
 var folded = false;
+/*
+ * Not Needed
+ * 
 var river1 = "BJ";
 var river2 = "BJ";
 var river3 = "BJ";
 var river4 = "BJ";
 var river5 = "BJ";
+*/
 var pot = 0;
 var loggedIn = false;
 var ready = false;
 
 function login(){
-        var dataOut = {action:"signup"};
-        var redJSON=$.post(url, dataOut, function(){},"json");     
-        return redJSON["SignUpWorked"];
+        var verb = "add_player";
+        $.post(url + verb);
+        loggedIn=true;
 }
 
+//Not Sure What to do with this
 function isReady(){
         var dataOut = {action:"IsItReady"};
-        var redJSON=$.post(url, dataOut, function(){},"json");
+        var redJSON=$.post(url + verb);
         return redJSON["Ready"];
 }
 
 function fold(){
+        //Check to see if it is the current player's turn
         if (currentPlayerTurn === playerNumber && !folded){
-            var dataOut = {action:"Fold"};
-            var caller=$.post(url, dataOut, function(){},"json");
-            if(caller["success"]){
-                folded = true;
-            }
-            refresh();
+            var verb = "fold";
+            $.post(url + verb);
+            folded = true;
         }
 }
 
 function call(){
-        var dataOut={action:"Call"};
-        $.post(url, dataOut, function(){},"json");
-        refresh();
+        var verb="call";
+        $.post(url + verb);
+        verb = "end_turn";
+        $.post(url + verb);
 }
 
 function raise(raiseAmount){
-        var dataOut={action:"Raise",value:raiseAmount};
-        $.post(url, dataOut, function(){},"json");
-        refresh();
+        //Need an api call to check if its the player's turn.
+        var verb = "bet&amount=" + str(raiseAmount); 
+        $.post(url + verb);
+        verb = "end_turn";
+        $.post(url + verb);
 }
 
 function getPlayerData(){
@@ -59,9 +64,7 @@ function getPlayerData(){
 }
 
 function theGame(){
-        while(!loggedIn){
-            loggedIn = login();
-        }
+        loggedIn = login();
         
         while(!ready){
             ready = isReady();
@@ -74,13 +77,8 @@ function theGame(){
             refresh();
         }
 }
-/*
+
 function reset(){
-    var river1 = "BJ";
-    var river2 = "BJ";
-    var river3 = "BJ";
-    var river4 = "BJ";
-    var river5 = "BJ";
     var playerData = $.post(url, {"datatype":"json", "headers":header});
     var playerHand = playerData["hand"];
     var pot = 0;
@@ -100,16 +98,14 @@ function reset(){
 
     $(".p4c2").attr('src',"playing-card-back.jpg");
 }
-*/
+
 function refresh(){
-    var dataOut = {action:"Update"};
-    scoresJSON = $.post(url, dataOut, function(){},"json");;
+    var verb = "river";
+    river = $.post(url + verb);
     playerScores = scoresJSON["Scores"];
     reveal = scoresJSON["allHands"];
     pot = scoresJSON["Pot"];
     gameOver = scoresJSON["GameOver"];
-    river = scoresJSON["river"];
-    CardsShown = scoresJSON["RiverCount"];
     
     //Data for player's scores/Turn
     $("#p1-money").html("Player 1: " + playerScores[0].toString());
@@ -120,29 +116,19 @@ function refresh(){
     $("#playerTurn").html("Player" + (scoresJSON["CurrentPlayerTurn"] + 1).toString() + "'s Turn" );
     
     //These ifs are for the river.
-    if(cardsShown = 1){
-        river1 = river.substr(0,2)
-        $(".center1").attr('src',cardsPath + river1 + ".png");
+    
+    if(river.length == 3){
+        $(".center1").attr('src',cardsPath + river[0] + ".png");
+        $(".center2").attr('src',cardsPath + river[1] + ".png");
+        $(".center3").attr('src',cardsPath + river[2]+ ".png");
     }
     
-    if(cardsShown = 2){
-        river2 = river.substr(2,2);
-        $(".center2").attr('src',cardsPath + river2 + ".png");
+    if(river.length == 4){
+        $(".center4").attr('src',cardsPath + river[3] + ".png");
     }
     
-    if(cardsShown = 3){
-        river3 = river.substr(4,2);
-        $(".center3").attr('src',cardsPath + river3 + ".png");
-    }
-    
-    if(cardsShown = 4){
-        river4 = river.substr(6,2);
-        $(".center4").attr('src',cardsPath + river4 + ".png");
-    }
-    
-    if(cardsShown = 5){
-        river5 = river.substr(8,2);
-        $(".center5").attr('src',cardsPath + river5 + ".png");
+    if(river.length == 5){
+        $(".center5").attr('src',cardsPath + river[4] + ".png");
     }
     
     
