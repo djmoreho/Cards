@@ -1,0 +1,233 @@
+
+body{
+        width:100%;
+}
+
+html{
+        width:100%;
+}
+
+h1 {
+	font-family: Verdana, sans-serif;
+	font-size: 40px;
+	text-align: center;
+}
+
+h2 {
+	font-family: Verdana, sans-serif;
+	font-size: 30px;
+	text-align: center;
+	font-weight: normal;
+}
+
+h3 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	position: absolute;	
+	left: 270px;
+	top: 380px;
+}
+
+p.aboutText {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	text-align: center;
+}
+
+div.navigation {
+	width: 100%;
+	height: 40px;
+	background-color: #00B8E6;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	float: center;
+}
+
+li {
+	float: left;
+}
+
+a {
+	display: block;
+	width: 200px;
+	font-family: Verdana, sans-serif;
+	font-size: 30px;
+	text-align: center;
+	background-color: #00B8E6;
+}
+
+a:hover {
+	background-color: #2593B8;
+}
+
+a:visited {
+	color: #000000;
+}
+
+img.platypus {
+	position: absolute;
+	top: 25px;
+	left: 10px;
+}
+
+img.poker {
+	position: absolute;
+	left: 200px;
+}
+
+div.playingArea {
+	position: absolute;
+	width: 70%;
+	left: 15%;
+	height: 700px;
+	border: 5px solid gray;
+}
+
+.sideways_Card {
+        width:125px;
+        height:75px;
+}
+
+.vertical_Card {
+        width:75px;
+        height:125px;
+}
+
+.p1c1 {
+	position: absolute;
+	left: 38%;
+	top: 30px;
+}
+
+.p1c2 {
+	position: absolute;
+	left: 52%;
+	top: 30px;
+}
+
+h4 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	text-align: center;
+	top: 1px;
+}
+
+.p2c1 {
+	position: absolute;
+	left: 5%;
+	top: 35%;
+}
+
+.p2c2 {
+	position: absolute;
+	left: 5%;
+	top: 50%;
+}
+
+.p4c1 {
+	position: absolute;
+	right: 5%;
+	top: 35%;
+}
+
+.p4c2 {
+	position: absolute;
+	right: 5%;
+	top: 50%;
+}
+
+.p3c1 {
+	position: absolute;
+	left: 38%;
+	bottom: 30px;
+}
+
+.p3c2 {
+	position: absolute;
+	left: 52%;
+	bottom: 30px;
+}
+
+.center1{
+	position: absolute;
+	left: 25%;
+	top: 40%;
+}
+
+.center2{
+	position: absolute;
+	left: 35%;
+	top: 40%;
+}
+
+.center3{
+	position: absolute;
+	left: 45%;
+	top: 40%;
+}
+
+.center4{
+	position: absolute;
+	left: 55%;
+	top: 40%;
+}
+
+.center5{
+	position: absolute;
+	left: 65%;
+	top: 40%;
+}
+
+div.money {
+	position: absolute;
+	height: 250px;
+	border: 5px solid gray;
+	width: 12.5%;
+}
+
+h4 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	text-align: center;
+	font-weight: normal;
+}
+
+p.moneyLeft {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	text-align: left;
+	padding: 4px;
+	font-weight: normal;
+}
+
+div.bet {
+	position: absolute;
+	top: 500px;
+	width: 12.5%;
+	font-family: Verdana, sans-serif;
+}
+
+form.betting {
+	font-size:15px;
+}
+
+h5 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	font-weight: normal;
+}
+
+p.turn {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	font-weight: normal;
+}
+
+input {
+	width: 60px;
+}

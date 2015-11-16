@@ -25,13 +25,53 @@ h3 {
 	font-size: 20px;
 	position: absolute;	
 	left: 270px;
-	top: 380px;
+	top: 390px;
+}
+
+h6 {
+	font-family: Verdana, sans-serif;
+	font-size: 20px;
+	position: absolute;
+	left: 500px;
+	top: 363px;
 }
 
 p.aboutText {
 	font-family: Verdana, sans-serif;
 	font-size: 15px;
 	text-align: center;
+}
+
+h7 {
+	font-family: Verdana, sans-serif;
+	font-size: 17px;
+	font-weight: bold;
+}
+
+h8 {
+	font-family: Verdana, sans-serif;
+	font-size: 17px;
+	font-weight: bold;
+	position: absolute;
+	top: 350px;
+	left: 5px;
+}
+
+p.rulesText1 {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	position: absolute;
+	left: 5px;
+	right: 5px;
+}
+
+p.rulesText2 {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	position: absolute;
+	left: 5px;
+	right: 5px;
+	top: 365px;
 }
 
 div.navigation {
@@ -78,6 +118,11 @@ img.platypus {
 img.poker {
 	position: absolute;
 	left: 200px;
+}
+
+img.war {
+	position: absolute;
+	left: 425px;
 }
 
 div.playingArea {
@@ -216,6 +261,16 @@ form.betting {
 	font-size:15px;
 }
 
+form.flip {
+	font-size: 25px;
+}
+
+div.flipCards {
+	position: absolute;
+	top: 500px;
+	font-family: Verdana, sans-serif;
+}
+
 h5 {
 	font-family: Verdana, sans-serif;
 	font-size: 20px;
@@ -228,6 +283,30 @@ p.turn {
 	font-weight: normal;
 }
 
-input {
+input.betting1 {
 	width: 60px;
+}
+
+p.cardsLeft {
+	font-family: Verdana, sans-serif;
+	font-size: 15px;
+	text-align: left;
+	padding: 4px;
+	font-weight: normal;
+}
+
+.player1 {
+	position: absolute;
+	left: 44%;
+	top: 30px;
+	height: 250px;
+	width: 150px;
+}
+
+.player2 {
+	position: absolute;
+	left: 44%;
+	bottom: 30px;
+	height: 250px;
+	width: 150px;
 }

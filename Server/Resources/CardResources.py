@@ -38,7 +38,8 @@ class CookieError(Exception):
 
 # Main Resource, deals with certain things that have to be setup
 class CardsResource(Resource):
-
+    pass
+'''
     def render(self, request):
         try:
             id = self.getPlatypusCookie(request)
@@ -70,7 +71,7 @@ class CardsResource(Resource):
             request.finish()
         else:
             return Resource.render(self, request) 
-        '''
+        
         print "Underlying render code"
         not_in_db = not IDs.has_key(cookie)
         if cookie == None or not_in_db:
@@ -80,7 +81,7 @@ class CardsResource(Resource):
             request.addCookie("platypus_id", cookie, expiration_time) 
 
             # httpOnly = True, # not accisable by javascript
-        ''' 
+        
 
     def getPlatypusCookie(self, request): # twisted already has a 'getCookie' method
         cookie = request.getCookie("platypus_id")
@@ -111,6 +112,7 @@ class CardsResource(Resource):
         # redirect page an set cookie
         print "Cookie issue."
         request.addCookie("platypus_id", cookie_str)
+'''
 
 class GameError(Exception):
     '''Any game error'''
