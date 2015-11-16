@@ -3,6 +3,9 @@
 <head>
 	<link rel="stylesheet" href="style.css">	
 	<title> Cards </title>
+        <script src="jquery-1.11.3.min.js"></script>
+        <script src="poker.js"></script>
+            
 </head>
 
 <body>
@@ -20,18 +23,14 @@
 	<div class="texas">
 		<h2> Texas Hold 'Em </h2>
 		<div class="playingArea">
-			<!-- Player 1 Cards -->
 			<img src="playing-card-back.jpg" class="p1c1 vertical_Card">
 			<img src="playing-card-back.jpg" class="p1c2 vertical_Card">
-			<!-- Player 2 Cards -->
-			<img src="sidewayscard.jpg" class="p2c1 sideways_Card">
-			<img src="sidewayscard.jpg" class="p2c2 sideways_Card">
-			<!-- Player 3 Cards -->
+			<img src="playing-card-back.jpg" class="p2c1 vertical_Card">
+			<img src="playing-card-back.jpg" class="p2c2 vertical_Card">
 			<img src="playing-card-back.jpg" class="p3c1 vertical_Card">
 			<img src="playing-card-back.jpg" class="p3c2 vertical_Card">
-			<!-- Player 4 Cards -->
-			<img src="sidewayscard.jpg" class="p4c1 sideways_Card">
-			<img src="sidewayscard.jpg" class="p4c2 sideways_Card">
+			<img src="playing-card-back.jpg" class="p4c1 vertical_Card">
+			<img src="playing-card-back.jpg" class="p4c2 vertical_Card">
 			<img src="playing-card-back.jpg" class="center1 vertical_Card">
 			<img src="playing-card-back.jpg" class="center2 vertical_Card">
 			<img src="playing-card-back.jpg" class="center3 vertical_Card">
@@ -40,20 +39,20 @@
 		</div>	
 		<div class="money">
 			<h4> Money </h4>
-			<p class="moneyLeft"> Player 1: </p>
-			<p class="moneyLeft"> Player 2: </p>
-			<p class="moneyLeft"> Player 3: </p>
-			<p class="moneyLeft"> Player 4: </p>
+			<p class="moneyLeft" id="p1-money"> Player 1: 0</p>
+			<p class="moneyLeft" id="p2-money"> Player 2: 0</p>
+			<p class="moneyLeft" id="p3-money"> Player 3: 0</p>
+			<p class="moneyLeft" id="p4-money"> Player 4: 0</p>
 		</div>
 		<div class="bet">
-			<h5> Player 1's Turn </h5>
-			<p class="turn"> Money Left: </p>
+			<h5 id="playerTurn"> Player 1's Turn </h5>
+			<p class="turn" id="playerMoney"> Money Left: </p>
 			<form class="betting"> 
 				Amount<br> 
 				<input type="text" name="amount" id="amount">
-				<input type="submit" value="Bet!">
+                                <button type="button" onclick=raise(amount)>Raise</button>
 				<p></p>
-				<input type="submit" value="Call">
+                                <button type="button" onclick=call())>Call</button>
 			</form>
 		</div>
 	</div>
