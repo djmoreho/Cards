@@ -8,5 +8,5 @@ Verb = ....
 Return
 
 success = true | false  whether it worked
-Issue = "Some issues" if there is a success else blank
-.... = other details
+Issue   = "Some issues" if there is a success else blank
+....    = other details
