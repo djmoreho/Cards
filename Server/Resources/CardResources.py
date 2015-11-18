@@ -1,6 +1,4 @@
 ## CardResources.py  (our custom Resources, not to be confused with Twisteds)
-## This way we can keep the crypto out of this file
-## and hopefully make life easier.
 ## Naming Conventions: PEP 08 and PEP 20
 
 import hashlib
@@ -27,92 +25,179 @@ from twisted.internet import reactor
 
 from Crypto import Random
 import base64
-
+import urlparse
+import urllib
+import time
 
 INC = 22
-IDs = {}
-GAMEs = {}
+CookieIDsDict = {}
+GameIDDict = {}
 COOKE_TIME_EXPERATION = 2 * 60 * 60
 class CookieError(Exception):
     '''Cookie fetching and validation issues'''
 
 # Main Resource, deals with certain things that have to be setup
 class CardsResource(Resource):
-    pass
-'''
     def render(self, request):
         try:
-            id = self.getPlatypusCookie(request)
+            id = getPlatypusCookie(request)
         except CookieError:
+            print "There was a cookie issue"
             try:
                 redirect_number = int(request.args["redirect"][0])
             except:
-                redirect_number = 0
-            self.setPlatypusCookie(request)
-            print dir(self)
-            print dir(request)
-            url = request.sibLink("?redirect=%s" % (redirect_number+1))
-            print type(url)
-            print url
-            url = request.childLink("?redirect=%s" % (redirect_number+1))
-            print url
+                redirect_number = 1
 
-            url = request.prePathURL()
-            print type(url)
-            print url
-            url = request.URLPath()
-            print dir(url)
-            print type(url)
-            print url
+            print "Redirect number ",
+            print int(redirect_number)
 
-            raise IOError
 
-            redirectTo(url, request)
-            request.finish()
+            if redirect_number < 6:
+                print "Setting cookie"
+                setPlatypusCookie(request)
+                url = str(request.uri)
+                url = self.appendToURL(url, {"redirect":str(redirect_number)})
+                print "Redirect url is ",
+                print str(url)
+                redirectTo(url, request)
+                request.finish()
+                return NOT_DONE_YET # though we are
+
+            else:
+                request.write("<h2> You're request couldn't be completed.")
+                request.finish()
+                return NOT_DONE_YET# though we are
+
         else:
-            return Resource.render(self, request) 
-        
+            try:
+                return Resource.render(self, request) 
+            except:
+                log.err()
+                return "<html> <body><h2>Sorry we could not process your request.</h2></body> </html>"
+        '''       
         print "Underlying render code"
-        not_in_db = not IDs.has_key(cookie)
-        if cookie == None or not_in_db:
+        not_in_db = not CookieIDsDict.has_key(id)
+        if id == None or not_in_db:
 
-            IDs[cookie] = []
+            CookieIDsDict[id] = []
             expiration_time = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time() + 3600 * 2))
-            request.addCookie("platypus_id", cookie, expiration_time) 
+            request.addCookie("platypus_id", id, expiration_time) 
 
             # httpOnly = True, # not accisable by javascript
-        
+        '''
+    def appendToURL(self, url, params):
+        print url
+        print params
+        url_parts = list(urlparse.urlparse(url))
+        print url_parts
+        query = dict(urlparse.parse_qsl(url_parts[4]))
+        print url_parts[4]
+        print query
+        query.update(params)
+        print query
 
-    def getPlatypusCookie(self, request): # twisted already has a 'getCookie' method
-        cookie = request.getCookie("platypus_id")
-        if cookie is None:
-            raise CookieError("No cookie")
+        url_parts[4] = urllib.urlencode(query)
+        print url_parts
+        return str(urlparse.urlunparse(url_parts))
 
-        try:
-            id = IDs[cookie]
-        except (KeyError, ValueError):
-            raise CookieError("Invalid cookie")
 
-        time = it["time"]
-        if (time + expiration_time) < int(time.time()):
+# cookie utils
+def getPlatypusCookie(request): # twisted already has a 'getCookie' method
+    cookie = request.getCookie("platypus_id")
+    if cookie is None:
+        raise CookieError("No cookie")
+
+    try:
+        print CookieIDsDict
+        id = CookieIDsDict[cookie]
+        print id
+        cookie_set_time = id["time"]
+        if (cookie_set_time + COOKE_TIME_EXPERATION) < int(time.time()):
             raise CookieError("Old cookie")
+    except (KeyError, ValueError):
+        raise CookieError("Invalid cookie")
 
-        # ok valid cookie and all so return it's id object
-        return id
+    # valid cookie; update time
+    id["time"] = time.time()
+    
+    return cookie
 
-    def setPlatypusCookie(self, request):
-        # https://www.owasp.org/index.php/Insufficient_Session-ID_Length
-        # cookie should be at least 128 bits
-        # ours are 256 bits or 32 bytes
-        cookie_str = Random.get_random_bytes(32)
-        assert len(cookie_str) == 32
-        cookie_str = base64.b64encode(cookie_str)
-        IDs[cookie_str] = []
-        expiration_time = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time() + 3600 * 2))
-        # redirect page an set cookie
-        print "Cookie issue."
-        request.addCookie("platypus_id", cookie_str)
-'''
+def setPlatypusCookie(request):
+    # https://www.owasp.org/index.php/Insufficient_Session-ID_Length
+    # cookie should be at least 128 bits
+    # ours are 256 bits or 32 bytes
+    cookie_str = Random.get_random_bytes(32)
+    assert len(cookie_str) == 32
+    cookie_str = base64.b64encode(cookie_str)
+    CookieIDsDict[cookie_str] = {}
+    CookieIDsDict[cookie_str]["time"] = time.time() # time cookie was set
+    CookieIDsDict[cookie_str]["games"] = {} # stores all the players games they are in mapping game_id -> player number
+    expiration_time = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time() + 3600 * 2))
+    # redirect page an set cookie
+    print "Cookie issue."
+    request.addCookie("platypus_id", cookie_str)
+
+
+class CookiePage(CardsResource):
+
+    def render(self, *args, **kw):
+        # bypass the normal setting of a cookie
+        return Resource.render(self, *args, **kw)
+
+    def render_GET(self, request):
+        request.write("<html>")
+        request.write("<body>")
+        request.write("<h1>")
+        request.write("Cookie Information Page")
+        request.write("</h1>")
+        request.write("<p>")
+        request.write("Your cookie id: ")
+        try:
+            cookie = getPlatypusCookie(request)
+            request.write("<code>")
+            request.write(cookie)
+            request.write("</code>")
+        except CookieError:
+            request.write("None")
+        request.write("</p>")
+        request.write("<p>")
+        request.write("Cookie was set at ")
+        import datetime
+        try:
+            cookie = getPlatypusCookie(request)
+            time = CookieIDsDict[cookie]["time"]
+            formatted_time = datetime.datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
+            request.write("<code>")
+            request.write(formatted_time)
+            request.write("</code>")
+        except CookieError:
+            request.write("unkown")
+        request.write("</p>")
+        request.write("<p>")
+        request.write("You're involved in ")
+        try:
+            cookie = getPlatypusCookie(request)
+            games = CookieIDsDict[cookie]["games"]
+            request.write(str(len(games.keys())))
+            request.write(" games.")
+            request.write("<br/><div>")
+            for id in games:
+                v = GameIDDict[id]["game"]
+                request.write("<code>%s</code>" % str(v))
+                request.write("<br/>")
+                request.write("<p>I am player number %s</p>" % str(games[id]))
+
+            request.write("</div>")
+
+        except (CookieError, KeyError, ValueError):
+            request.write("0 games.")
+        request.write("</p>")
+
+        request.write("</body>")
+        request.write("</html>")
+        request.finish()
+
+        return NOT_DONE_YET
 
 class GameError(Exception):
     '''Any game error'''
@@ -174,6 +259,7 @@ class Game(object):
 from Games.TexasHoldem import score
 from Games.TexasHoldem import getHands, generateDeck
 
+
 class Poker(Game):
     verbs = ["bet", "fold", "add_player", "score", "river"]
     name = "poker"
@@ -197,6 +283,13 @@ class Poker(Game):
         self.river.append(self.deck.pop())
 
         self.river_rounds = 0
+
+    def __str__(self):
+        return """Poker(Players=%s,\n
+                        Bets=%s,\n
+                        Hands=%s,\n
+                        Rivers=%s)""" % (len(self.players), self.bets, self.hands, self.river)
+                
 
     def check_musts(self, player):
         print "Checking..."
@@ -229,21 +322,28 @@ class Poker(Game):
         hand.append(self.deck.pop()) # god help me
         hand.append(self.deck.pop()) # god help me
         self.hands.append(hand)
-        return [hand, 5000]
+        return [self.players[-1], hand, 5000]
 
     def verb_fold(self, player):
         self.players.remove(player)
         self.verb_end_turn(player)# end their turn for them
 
     def verb_score(self): # not sure how this one will work
-        fold = list(bids)
-        for n, i in enumerate(fold):
-            fold[n] = False # false means folded; god help me
+        # make sure this is only return at the end
+        # last player or everyone has gone in the 3rd round so it's the 4th
+        if len(self.players) == 1 or self.river_rounds == 4:
+            fold = list(self.bets)
+            for n, i in enumerate(fold):
+                fold[n] = False # false means folded; god help me
 
-        for i in players:
-            fold[i-1] = True# these are the guys that didn't fold
-        #(bidArr, canWin, numPlayers, river, hands):
-        s = score(self.bets, fold, len(self.bets), self.river, self.hands)
+            for i in self.players:
+                fold[i-1] = True# these are the guys that didn't fold
+
+            #(bidArr, canWin, numPlayers, river, hands):
+            s = score(self.bets, fold, len(self.bets), self.river, self.hands)
+        else:
+            raise GameError("Not end of game. Scores not available")
+        
 
     def verb_bet(self, player, amount):
         #
@@ -271,10 +371,11 @@ class Poker(Game):
             return self.river[:3]
         elif self.river_rounds == 2:
             return self.river[:4]
-        elif self.river_rounds == 3:
+        else: # return is 3 or 4 (round 4 is everyone done)
             return self.river
 
 
+Games = {"poker":Poker}
 
 
 p = Poker()
@@ -299,158 +400,53 @@ class API(Resource):
         x = p.verb(action, **processed_args)
         return "<html> <body> <code> %s </code> </body> </html>" % (x)
 
-### API
-from Games.TexasHoldem import getHands, generateDeck
-class TH4Player(object):
-
-    def __init__(self):
-        self.deck = generateDeck()
-        self.hands = getHands(4, 2, self.deck)
-        ri = 4 * 2
-        self.river = self.hands[ri:ri+5]
-        self.money = [5000, 5000, 5000, 5000]
-        self.player_count = 0
-        self.players = []
-        self.round = 0
-
-    def reg_player(self, id):
-        self.player_count = self.player_count + 1
-        self.players.append(id)
-
-    def get_hand(self, player):
-        return self.hands[player]
-
-    def inc_round(self ):
-        self.round = self.round + 1
-
-    def get_river(self):
-        return self.river[self.round]
-
-    def do_bet(self, player, amount):
-        give = self.amount[player]
-        if give > amount:
-            give = give - amount
-            self.amount[player] = give
-            print "Player %s has %s left" % (player, give)
-            return give
-        else:
-            raise RuntimeError("Too big of a bet")
-
-i = 0
-'''
-class API(CardsResource):
-    isLeaf = False
-    def render_GET(self, request):
-        return "<html><h1>API</h1></html>"
-
-    def render_POST(self, request):
-        print request.args
-        if request.args["type"][0] == "pa":
-            v = request.args["verb"][0]
-            if v == "bet":
-                try:
-                    amount = request.args["amount"]
-                    cookie = request.getCookie("platypus_id")
-                    print "GOT COOKIE"
-                    print IDs
-                    print IDs[cookie]
-                    game_id = IDs[cookie][0]
-                    g = GAMEs[game_id]
-                    give = g.do_bet(int(amount))
-                except:
-                    log.err()
-                    d = {}
-                    d["success"] = False
-                    d["reason"] = "Too big of a bet"
-                else:
-                    d = {}
-                    d["success"] = True
-                    d["amount"] = give
-                str = json.dumps(d)
-                return str
-
-            if v == "draw":
-                try:
-                    cookie = request.getCookie("platypus_id")
-                    print "GOT COOKIE"
-                    print IDs
-                    print IDs[cookie]
-                    game_id = IDs[cookie][0]
-                    g = GAMEs[game_id]
-                    p = g.players.index(cookie)
-                    print "GAME ID"
-                    print game_id
-                    print "PLAYERs"
-                    print p
-                    hand = g.get_hand(int(p))
-                except:
-                    log.err()
-                    d = {}
-                    d["success"] = False
-                    d["reason"] = "Unkown"
-                else:
-                    d = {}
-                    d["success"] = True
-                    d["hand"] = hand
-                    global i
-                    i = i + 1
-                    print "i\n\n\n\n\n\n\n\n\n\n"
-                    print i
-                    if i == 1:
-                        d["images"] = ["card_images/ace_of_clubs.png", "card_images/jack_of_hearts.png"]
-                    else:
-                        d["images"] = ["card_images/2_of_clubs.png", "card_images/ace_of_hearts.png"]
-                    """
-                    for i in hand:
-                        p = list(i)
-                        s = "html/card_images/%s*_of_%s*.png" % (p[1].lower(), p[0].lower())
-                        print s
-                        print glob.glob(s)
-                        print glob.glob(s)[0]
-                        print glob.glob(s)[0].replace("html/", "")
-                        d["images"].append( glob.glob(s)[0].replace("html/", ""))
-                    """
-                str = json.dumps(d)
-                print str
-                return str
-                
-        return str(request.args)
-'''
-
 class Users(CardsResource):
     '''Renders a users page'''
     isLeaf = False
     def render_GET(self, request):
         return "<html><h1>User</h1></html>"
 
+
+def getGame(id):
+    ''' Returns a game object associated with a game id '''
+    game  = GameIDDict[id]
+    return game["game"]
+
+
+
+def createGame(id, game_object):
+    ''''Sets up a game object '''
+    GameIDDict[id] = {}
+    GameIDDict[id]["game"] = game_object # mapping to game interactivity for api
+
 class GameResource(CardsResource):
     '''Renders the game app'''
     isLeaf = False
     def render_GET(self, request):
         a = request.args
+        game_id = a["gid"][0]
+        cookie = getPlatypusCookie(request)
+        type    = str(a["gtype"][0]).lower()
         try:
-            id = a["gid"]
-            c = request.getCookie("platypus_id")
-            assert c != None
-        except:
-            log.err()
+            game_object = getGame(game_id)
+            print game_object
+        except KeyError:
+            # no game to be found, we need to create it
+            game_object = Games[type]()
+            createGame(game_id, game_object)
+        # check to see if the user is already part of this game
+        if game_id in CookieIDsDict[cookie]["games"]:
+            pass# do nothing
         else:
-            print "ID - GAME"
-            print id
-            print c
+            details = game_object.verb("add_player")
+            CookieIDsDict[cookie]["games"][game_id] = details[0] # map player id
 
-        print IDs
-        IDs[c].append(c)
-        print IDs
-        try:
-            g = GAMEs[c]
-            g.reg_player(c)
-        except:
-            g = TH4Player()
-            GAMEs[c] = g
-            g.reg_player(c)
-
-        return File("html/game.html").render_GET(request)
+        if type == "poker":
+            return File("html/poker.html").render_GET(request)
+        elif type == "war":
+            return File("html/war.html").render_GET(request)
+        else:
+            return "<html><body><h2>Unable to render game %s</h2</body></html>" % type
 
 class PersistantExample(CardsResource):
     '''Gives an example of a persistant request'''
@@ -559,6 +555,7 @@ def Create(root):
     root.putChild("user", Users())
     root.putChild("game", GameResource())
 
+    root.putChild("cookie_info", CookiePage())
 
     # api
     root.putChild("api", api)
