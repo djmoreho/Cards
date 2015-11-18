@@ -213,7 +213,7 @@ class Game(object):
         self.players = []
         self.current_player = 1
 
-    def verb(self, verb, player = None, *args, **kw):
+    def verb(self, verb, player, *args, **kw):
         self.called_verbs.append(verb.lower())
         print "verb " + str(verb)
         print "player " + str(player)
@@ -221,20 +221,19 @@ class Game(object):
         print "kw " + str(kw)
         print "player list " + str(self.players)
         print "current player " + str(self.current_player)
-        if player is not None:
-            player = int(player)
 
-        if (player in self.players and self.current_player == player) or player is None:
+        if self.current_player == player:
             s = "verb_%s" % verb.lower()
             h = getattr(self, s)
 
-            if player is None:
+            try:
                 ret = h(*args, **kw)
-            else:
-                ret = h(player, *args, **kw)
+            except TypeError:
+                return GameError("Incorrect arguments")
             return ret
         else:
             raise GameError("Not your turn!")
+
     def check_musts(self, player):
         c = list(called_verbs)
         for i in musts:
@@ -291,7 +290,7 @@ class Poker(Game):
                         Rivers=%s)""" % (len(self.players), self.bets, self.hands, self.river)
                 
 
-    def check_musts(self, player):
+    def check_musts(self):
         print "Checking..."
         # if either are in there
         if "bet" in self.called_verbs:
@@ -300,14 +299,21 @@ class Poker(Game):
             return
         raise GameError("You have not done everything you need to do.")
 
-    def verb_end_turn(self, player):
-        Game.verb_end_turn(self, player)
+    def verb_player_number(self):
+        return self.current_player
+
+    def verb_get_hand(self):
+        return self.hands[self.current_player]
+
+    def verb_end_turn(self):
         # last man standing?
         if len(self.players) == 1:
             print "Last man"
 
-        if player == self.players[-1]:
+        if self.current_player == self.players[-1]:
             self.river_rounds = self.river_rounds + 1
+            self.current_player = self.players[0]
+        Game.verb_end_turn(self, self.current_player)
 
     def verb_add_player(self):
         if len(self.deck) < 2:
@@ -324,9 +330,9 @@ class Poker(Game):
         self.hands.append(hand)
         return [self.players[-1], hand, 5000]
 
-    def verb_fold(self, player):
-        self.players.remove(player)
-        self.verb_end_turn(player)# end their turn for them
+    def verb_fold(self):
+        self.players.remove(self.current_player)
+        self.verb_end_turn()# end their turn for them
 
     def verb_score(self): # not sure how this one will work
         # make sure this is only return at the end
@@ -341,27 +347,27 @@ class Poker(Game):
 
             #(bidArr, canWin, numPlayers, river, hands):
             s = score(self.bets, fold, len(self.bets), self.river, self.hands)
+            return s
         else:
             raise GameError("Not end of game. Scores not available")
         
 
-    def verb_bet(self, player, amount):
+    def verb_bet(self, amount):
         #
         # BROKEN!!!!
         #self.gs.takeBids(player, bid_amount)
         amount = int(amount)
-        player = int(player)
         print "Bet " + str(self.bets)
         print "Players " + str(self.players)
-        print "Player" + str(player)
-        b = self.bets[player - 1]
+        print "Player" + str(self.current_player)
+        b = self.bets[self.current_player - 1]
         print "Amount player has " + str(b)
         print "Amount being bet " + str(amount)
         if amount > b:
             raise GameError("Too big of a bet!")
 
         b = b - amount
-        self.bets[player - 1] = b
+        self.bets[self.current_player - 1] = b
         return b
 
     def verb_river(self):
@@ -388,17 +394,34 @@ class API(Resource):
 
     def render_POST(self, request):
         # on the last version "Well at least we can delete this abomination"
-        action = request.args["action"][0]
-        game   = request.args["game"][0]# later we can move this to virtual directories
+        action  = request.args["action"][0]
+        game    = request.args["game"][0]# later we can move this to virtual directories
+        game_id = request.args["gid"][0]# later we can move this to virtual directories
+        cookie = getPlatypusCookie(request)
+        player_number = CookieIDsDict[cookie]["games"][game_id]
+
+
         other_args = dict(request.args)
+        # remove the special vars
         other_args.pop("action")
         other_args.pop("game")
+        other_args.pop("game_id")
+
+
         processed_args = {}
         for k in other_args.keys():
             processed_args[k] = other_args[k][0]
         print processed_args
         x = p.verb(action, **processed_args)
-        return "<html> <body> <code> %s </code> </body> </html>" % (x)
+        return """<html> <body> <code>
+               <p>Action: %s</p> <p>Game: %s</p> <p>Game ID: %s</p> 
+               </code> 
+               <code>
+               %s
+               </code> 
+               </body> </html>""" % (action, game, game_id, player_number, x)
+
+
 
 class Users(CardsResource):
     '''Renders a users page'''
