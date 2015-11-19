@@ -478,7 +478,7 @@ class DebugAPI(API):
 
 
         request.responseHeaders.addRawHeader("Content-Type", "text/html; charset=utf-8")
-        """<html> <body> <code>
+        return """<html> <body> <code>
                <p>Action: %s</p> <p>Game: %s</p> <p>Game ID: %s</p> <p>Player Number: %s</p> 
                </code>
                <p>Result: 
