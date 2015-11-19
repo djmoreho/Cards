@@ -4,7 +4,6 @@
 import hashlib
 import time
 import json
-import glob
 ### LOGGING
 from twisted.python import log
 
@@ -28,6 +27,7 @@ import base64
 import urlparse
 import urllib
 import time
+
 
 INC = 22
 CookieIDsDict = {}
@@ -139,10 +139,6 @@ def setPlatypusCookie(request):
 
 
 class CookiePage(CardsResource):
-
-    def render(self, *args, **kw):
-        # bypass the normal setting of a cookie
-        return Resource.render(self, *args, **kw)
 
     def render_GET(self, request):
         request.write("<html>")
@@ -260,7 +256,7 @@ from Games.TexasHoldem import getHands, generateDeck
 
 
 class Poker(Game):
-    verbs = ["bet", "fold", "add_player", "score", "river"]
+    verbs = ["bet", "fold", "score", "river"]
     name = "poker"
 
     def __init__(self):
@@ -270,6 +266,7 @@ class Poker(Game):
         self.deck = generateDeck()
         self.hands = []
         self.river = []
+        self.intial_players = 0
         # we cheat here with a just horrible hack
         # because all the cards are randomly distributed
         # we can actually calculate the river first
@@ -288,7 +285,35 @@ class Poker(Game):
                         Bets=%s,\n
                         Hands=%s,\n
                         Rivers=%s)""" % (len(self.players), self.bets, self.hands, self.river)
-                
+            
+    ## add player, intialize player to game
+
+    def add_player(self):
+        if len(self.deck) < 2:
+            raise GameError("Not enough cards")
+
+        self.intial_players = self.intial_players + 1
+
+        try:
+            self.players.append(self.players[-1] + 1)
+        except IndexError:
+            self.players.append(1)
+
+        self.bets.append(5000)
+        hand = []
+        hand.append(self.deck.pop()) # god help me
+        hand.append(self.deck.pop()) # god help me
+        self.hands.append(hand)
+
+        log.msg("add_player")
+        log.msg("hand: %s" % str(hand))
+        log.msg("bet: 5000")
+        log.msg("hands: %s" % str(self.hands))
+        log.msg("bets: %s" % str(self.bets))
+
+        return [self.players[-1], hand, 5000]
+
+    ### Game Verbs    
 
     def check_musts(self):
         print "Checking..."
@@ -303,7 +328,7 @@ class Poker(Game):
         return self.current_player
 
     def verb_get_hand(self):
-        return self.hands[self.current_player]
+        return self.hands[self.current_player - 1]
 
     def verb_end_turn(self):
         # last man standing?
@@ -315,21 +340,6 @@ class Poker(Game):
             self.current_player = self.players[0]
         Game.verb_end_turn(self, self.current_player)
 
-    def verb_add_player(self):
-        if len(self.deck) < 2:
-            raise GameError("Not enough cards")
-
-        try:
-            self.players.append(self.players[-1] + 1)
-        except IndexError:
-            self.players.append(1)
-        self.bets.append(5000)
-        hand = []
-        hand.append(self.deck.pop()) # god help me
-        hand.append(self.deck.pop()) # god help me
-        self.hands.append(hand)
-        return [self.players[-1], hand, 5000]
-
     def verb_fold(self):
         self.players.remove(self.current_player)
         self.verb_end_turn()# end their turn for them
@@ -337,7 +347,14 @@ class Poker(Game):
     def verb_score(self): # not sure how this one will work
         # make sure this is only return at the end
         # last player or everyone has gone in the 3rd round so it's the 4th
-        if len(self.players) == 1 or self.river_rounds == 4:
+        log.msg("score")
+
+        # this does allow the first client to get their score
+        # when they first join
+        last_player_left = (len(self.players) == 1 and self.intial_players > 1) # make sure it
+                                                                                # isn't the only player to have joined
+
+        if last_player_left or self.river_rounds == 4:
             fold = list(self.bets)
             for n, i in enumerate(fold):
                 fold[n] = False # false means folded; god help me
@@ -381,14 +398,20 @@ class Poker(Game):
             return self.river
 
 
-Games = {"poker":Poker}
-
-
-p = Poker()
+GAMES_LIST = {"poker":Poker}
 
 class API(Resource):
     '''Virtual Directory for api'''
     isLeaf = True
+
+    def render(self, request):
+
+        try:
+            return Resource.render(self, request)
+        except:
+            log.err()
+            return """{"message": "We were unable to handle your api request.", "success": false}"""
+
     def render_GET(self, request):
         return self.render_POST(request) # cheat for easy debugging
 
@@ -398,6 +421,7 @@ class API(Resource):
         game    = request.args["game"][0]# later we can move this to virtual directories
         game_id = request.args["gid"][0]# later we can move this to virtual directories
         cookie = getPlatypusCookie(request)
+        print CookieIDsDict[cookie]["games"]
         player_number = CookieIDsDict[cookie]["games"][game_id]
 
 
@@ -405,21 +429,42 @@ class API(Resource):
         # remove the special vars
         other_args.pop("action")
         other_args.pop("game")
-        other_args.pop("game_id")
+        other_args.pop("gid")
 
 
         processed_args = {}
         for k in other_args.keys():
             processed_args[k] = other_args[k][0]
         print processed_args
-        x = p.verb(action, **processed_args)
+        try:
+            player = int(CookieIDsDict[cookie]["games"][game_id])
+            game_object = getGame(game_id)
+            result = game_object.verb(action, player, **processed_args)
+        except GameError as ex:
+            log.err(ex)
+            d = """{"message": "%s", "success": false}""" % ex.message
+        except:
+            log.err()
+            d = """{"message": "We were unable to handle your api request.", "success": false}"""
+        else:
+            d = {}
+            d["success"] = True
+            d["message"] = "Succesfully handled api request."
+            d["result"] = result
+            
+            d = json.dumps(d)
+
         return """<html> <body> <code>
-               <p>Action: %s</p> <p>Game: %s</p> <p>Game ID: %s</p> 
-               </code> 
+               <p>Action: %s</p> <p>Game: %s</p> <p>Game ID: %s</p> <p>Player Number: %s</p> 
+               </code>
+               <p>Result: 
                <code>
                %s
                </code> 
-               </body> </html>""" % (action, game, game_id, player_number, x)
+               <p>
+               </body> </html>""" % (str(action), str(game),
+                                     str(game_id), str(player_number), 
+                                     str(d))
 
 
 
@@ -435,8 +480,6 @@ def getGame(id):
     game  = GameIDDict[id]
     return game["game"]
 
-
-
 def createGame(id, game_object):
     ''''Sets up a game object '''
     GameIDDict[id] = {}
@@ -449,19 +492,19 @@ class GameResource(CardsResource):
         a = request.args
         game_id = a["gid"][0]
         cookie = getPlatypusCookie(request)
-        type    = str(a["gtype"][0]).lower()
+        type = str(a["gtype"][0]).lower()
         try:
             game_object = getGame(game_id)
             print game_object
         except KeyError:
             # no game to be found, we need to create it
-            game_object = Games[type]()
+            game_object = GAMES_LIST[type]()
             createGame(game_id, game_object)
         # check to see if the user is already part of this game
         if game_id in CookieIDsDict[cookie]["games"]:
             pass# do nothing
         else:
-            details = game_object.verb("add_player")
+            details = game_object.add_player()
             CookieIDsDict[cookie]["games"][game_id] = details[0] # map player id
 
         if type == "poker":
