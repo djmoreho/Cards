@@ -218,17 +218,14 @@ class Game(object):
         print "player list " + str(self.players)
         print "current player " + str(self.current_player)
 
-        if self.current_player == player:
-            s = "verb_%s" % verb.lower()
-            h = getattr(self, s)
+        s = "verb_%s" % verb.lower()
+        h = getattr(self, s)
 
-            try:
-                ret = h(*args, **kw)
-            except TypeError:
-                return GameError("Incorrect arguments")
-            return ret
-        else:
-            raise GameError("Not your turn!")
+        try:
+            ret = h(*args, **kw)
+        except TypeError:
+            return GameError("Incorrect arguments")
+        return ret
 
     def check_musts(self, player):
         c = list(called_verbs)
@@ -332,17 +329,24 @@ class Poker(Game):
 
     def verb_end_turn(self):
         # last man standing?
-        if len(self.players) == 1:
-            print "Last man"
+        if self.current_player == player:
+            if len(self.players) == 1:
+                print "Last man"
 
-        if self.current_player == self.players[-1]:
-            self.river_rounds = self.river_rounds + 1
-            self.current_player = self.players[0]
-        Game.verb_end_turn(self, self.current_player)
+            if self.current_player == self.players[-1]:
+                self.river_rounds = self.river_rounds + 1
+                self.current_player = self.players[0]
+            Game.verb_end_turn(self, self.current_player)
+        else:
+            raise GameError("Not your turn!")
 
     def verb_fold(self):
-        self.players.remove(self.current_player)
-        self.verb_end_turn()# end their turn for them
+        if self.current_player == player:
+            self.players.remove(self.current_player)
+            self.verb_end_turn()# end their turn for them
+        else:
+            raise GameError("Not your turn!")
+
 
     def verb_score(self): # not sure how this one will work
         # make sure this is only return at the end
@@ -373,19 +377,23 @@ class Poker(Game):
         #
         # BROKEN!!!!
         #self.gs.takeBids(player, bid_amount)
-        amount = int(amount)
-        print "Bet " + str(self.bets)
-        print "Players " + str(self.players)
-        print "Player" + str(self.current_player)
-        b = self.bets[self.current_player - 1]
-        print "Amount player has " + str(b)
-        print "Amount being bet " + str(amount)
-        if amount > b:
-            raise GameError("Too big of a bet!")
+        if self.current_player == player:
+            amount = int(amount)
+            print "Bet " + str(self.bets)
+            print "Players " + str(self.players)
+            print "Player" + str(self.current_player)
+            b = self.bets[self.current_player - 1]
+            print "Amount player has " + str(b)
+            print "Amount being bet " + str(amount)
+            if amount > b:
+                raise GameError("Too big of a bet!")
 
-        b = b - amount
-        self.bets[self.current_player - 1] = b
-        return b
+            b = b - amount
+            self.bets[self.current_player - 1] = b
+            return b
+        else:
+            raise GameError("Not your turn!")
+
 
     def verb_river(self):
         if self.river_rounds == 0:
