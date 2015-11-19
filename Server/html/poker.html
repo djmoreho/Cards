@@ -3,12 +3,10 @@
 <head>
 	<link rel="stylesheet" href="style.css">	
 	<title> Cards </title>
-        <script src="jquery-1.11.3.min.js"></script>
-        <script src="poker.js"></script>
             
 </head>
 
-<body
+<body>
 	<div class="heading">
 		<h1> Cards </h1>
 		<img src="platypus.png" style="width:50px;height:50px" class="platypus">
@@ -50,12 +48,16 @@
 			<form class="betting"> 
 				Amount<br> 
 				<input type="text" name="amount" id="amount">
-                                <button type="button" onclick=raise(amount)>Raise</button>
+                                <button type="button" onclick="raise(amount)">Raise</button>
 				<p></p>
-                                <button type="button" onclick=call())>Call</button>
+                                <button type="button" onclick="call()">Call</button>
 			</form>
 		</div>
 	</div>
-	<script>game()</script>
+	<script src="jquery-1.11.3.min.js"></script>
+    <script src="poker.js"></script>
+    	<!--Starts The game when the document has finished loading -->
+	<script>$(document).ready(theGame());
+			$(window).load(theGame());</script>
 </body>
 </html>
