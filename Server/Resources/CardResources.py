@@ -424,6 +424,7 @@ class API(Resource):
         return self.render_POST(request) # cheat for easy debugging
 
     def render_POST(self, request):
+        request.responseHeaders.addRawHeader("Content-Type", "application/javascript; charset=utf-8")
         # on the last version "Well at least we can delete this abomination"
         action  = request.args["action"][0]
         game    = request.args["game"][0]# later we can move this to virtual directories
@@ -462,7 +463,22 @@ class API(Resource):
             
             d = json.dumps(d)
 
-        return """<html> <body> <code>
+        return d
+
+class DebugAPI(API):
+
+    def render_POST(self, request):
+        d = API.render_POST(self, request)
+
+        action  = request.args["action"][0]
+        game    = request.args["game"][0]# later we can move this to virtual directories
+        game_id = request.args["gid"][0]# later we can move this to virtual directories
+        cookie = getPlatypusCookie(request)
+        player_number = CookieIDsDict[cookie]["games"][game_id]
+
+
+        request.responseHeaders.addRawHeader("Content-Type", "text/html; charset=utf-8")
+        """<html> <body> <code>
                <p>Action: %s</p> <p>Game: %s</p> <p>Game ID: %s</p> <p>Player Number: %s</p> 
                </code>
                <p>Result: 
@@ -473,8 +489,6 @@ class API(Resource):
                </body> </html>""" % (str(action), str(game),
                                      str(game_id), str(player_number), 
                                      str(d))
-
-
 
 class Users(CardsResource):
     '''Renders a users page'''
@@ -633,6 +647,7 @@ def Create(root):
 
     # api
     root.putChild("api", api)
+    root.putChild("debugapi", DebugAPI())
 
     import glob
     for i in glob.glob("html/*"):
