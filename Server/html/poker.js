@@ -1,6 +1,6 @@
 
 //url the ajax stuff posts to
-var url ="127.0.0.01:8080/api?game=poker&action=";
+var url ="api?game=poker&action=";
 //All the other stuff
 var cardsPath = "card_pics/";
 var playerHand = [];
@@ -11,20 +11,87 @@ var folded = false;
 var pot = 0;
 var loggedIn = false;
 var ready = false;
-var gameId = "";
-var gameIDURL = "";
+var gameId = "5";
+var gameIDURL = "&gid=5";
 
+function intialize()
+{
+
+}
+var foo;
 function login(){
-        var verb = "player_number";
-        playerNumber=$.post(url + verb + gameIDURL);
-        verb = "get_hand";
-        hand = $.post(url + verb + gameIDURL);
-        
-        playerHand.append(hand[0]);
-        playerHand.append(hand[1]);
-        $(".p3c1").attr('src',cardsPath + playerHand[0] + ".png");
-        $(".p3c2").attr('src',cardsPath + playerHand[1] + ".png");
-        loggedIn=true;
+    // INTIALIZIATION OF THE POKER GAME USER SIDE
+    var result;
+    verb = "get_player_details";
+    $.post(url + verb + gameIDURL, dataType="json");
+    $.ajax({
+      url: url + verb + gameIDURL,
+      async: false,
+      dataType: 'json',
+      success: function(data){
+                    alert(data);
+                    result = data;
+               }
+    });
+
+    hand   = result.result[0];
+    bet    = result.result[1];
+    number = result.result[2];
+    playerHand.push(hand[0]);
+    playerHand.push(hand[1]);
+
+    $(".p3c1").attr('src',cardsPath + playerHand[0] + ".png");
+    $(".p3c2").attr('src',cardsPath + playerHand[1] + ".png");
+    $("#playerTurn").html("Player "+number+"'s Turn");
+    $("#playerMoney").html("Money Left: " + bet);
+
+    // RIVER
+    verb = "river";
+    $.post(url + verb + gameIDURL, dataType="json");
+    $.ajax({
+      url: url + verb + gameIDURL,
+      async: false,
+      dataType: 'json',
+      success: function(data){
+                    result = data;
+               }
+    });
+    river = result;
+    $(".center1").attr('src',cardsPath + river.result[0] + ".png");
+    $(".center2").attr('src',cardsPath + river.result[1] + ".png");
+    $(".center3").attr('src',cardsPath + river.result[2] + ".png");
+    $(".center4").attr('src',cardsPath + river.result[3] + ".png");
+    $(".center5").attr('src',cardsPath + river.result[4] + ".png");
+
+    update();
+}
+
+function update()
+{
+    // UPDATE CYCLE
+    verb = "update";
+    $.post(url + verb + gameIDURL, dataType="json");
+    $.ajax({
+      url: url + verb + gameIDURL,
+      async: false,
+      dataType: 'json',
+      success: function(data){
+                    result = data;
+               }
+    });
+    result = result.result;
+    player_turn = result[0];
+    bets = result[1];
+
+    $(".moneyLeft").each(
+        function setMoneyLeft(i, obj)
+        {
+            obj.innerHTML = "Player "+(i+1)+": " + bets[i];
+        }
+    );
+
+    setTimeout(update, 3000);
+
 }
 
 function fold(){
@@ -37,19 +104,35 @@ function fold(){
 }
 
 function call(){
+    // put a server side variable there
         var verb="call";
         $.post(url + verb);
         verb = "end_turn";
         $.post(url + verb + gameIDURL);
 }
 
-function raise(raiseAmount){
+function raise(){
         //Need an api call to check if its the player's turn.
-        var verb = "bet&amount=" + str(raiseAmount); 
-        $.post(url + verb + gameIDURL);
+        amount = document.getElementById("amount").value;
+        var verb = "bet&amount=" + amount; 
+        $.ajax({
+          url: url + verb + gameIDURL,
+          async: false,
+          dataType: 'json',
+          success: function(data){
+                        result = data;
+                   }
+        });
+
         verb = "end_turn";
-        $.post(url + verb + gameIDURL);
-}
+        $.ajax({
+          url: url + verb + gameIDURL,
+          async: false,
+          dataType: 'json',
+          success: function(data){
+                        result = data;
+                   }
+        });}
 
 function theGame(){
         loggedIn = login();
@@ -85,7 +168,7 @@ function parser(){
 		arguements[splitAgain[0]] = splitagain[1];
 	}
 	gameID = arguements[game_id];
-	gameIDURL = "&game_id=" + gameId;
+	gameIDURL = "&gid=" + gameId;
 }
 
 //ignore for now

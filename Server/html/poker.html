@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+<meta charset="UTF-8">
 <head>
 	<link rel="stylesheet" href="style.css">	
 	<title> Cards </title>
@@ -48,15 +49,21 @@
 			<form class="betting"> 
 				Amount<br> 
 				<input type="text" name="amount" id="amount">
-                                <button type="button" onclick="raise(amount)">Raise</button>
+                                <button type="button" onclick="raise()">Raise</button>
 				<p></p>
                                 <button type="button" onclick="call()">Call</button>
 			</form>
 		</div>
 	</div>
 	<script src="jquery-1.11.3.min.js"></script>
-    <script src="poker.js"></script>
-    	<!--Starts The game when the document has finished loading -->
+    <script src="poker.js">
+    </script>
+    <script type="text/javascript">
+    	// Starts The game when the document has finished loading
+
+    	login();
+
+  	</script>
 	<script>$(document).ready(theGame());
 			$(window).load(theGame());</script>
 </body>

@@ -222,9 +222,10 @@ class Game(object):
         h = getattr(self, s)
 
         try:
-            ret = h(*args, **kw)
+            ret = h(player, *args, **kw)
         except TypeError:
-            return GameError("Incorrect arguments")
+            log.msg()
+            raise GameError("Incorrect arguments")
         return ret
 
     def check_musts(self, player):
@@ -278,10 +279,19 @@ class Poker(Game):
         self.river_rounds = 0
 
     def __str__(self):
-        return """Poker(Players=%s,\n
+        return """Poker(CurrentPlayer=%s,\n
+                        IntialPlayers=%s,\n
+                        Players=%s,\n
                         Bets=%s,\n
                         Hands=%s,\n
-                        Rivers=%s)""" % (len(self.players), self.bets, self.hands, self.river)
+                        Rivers=%s,\n
+                        RiverRound=%s)""" % (self.current_player,
+                                         self.intial_players,
+                                         len(self.players),
+                                         self.bets,
+                                         self.hands,
+                                         self.river,
+                                         self.river_rounds)
             
     ## add player, intialize player to game
 
@@ -312,7 +322,7 @@ class Poker(Game):
 
     ### Game Verbs    
 
-    def check_musts(self):
+    def check_musts(self, player):
         print "Checking..."
         # if either are in there
         if "bet" in self.called_verbs:
@@ -321,26 +331,45 @@ class Poker(Game):
             return
         raise GameError("You have not done everything you need to do.")
 
-    def verb_player_number(self):
+    def verb_player_number(self, player):
         return self.current_player
 
-    def verb_get_hand(self):
-        return self.hands[self.current_player - 1]
+    def verb_get_player_details(self, player):
+        h = self.hands[player - 1]
+        b = self.bets[player - 1]
+        p = player
 
-    def verb_end_turn(self):
-        # last man standing?
+        return [h, b, p]
+
+    def verb_end_turn(self, player):
+        log.msg("end_turn")
         if self.current_player == player:
+            log.msg("correct player")
+            # last man standing?
             if len(self.players) == 1:
                 print "Last man"
 
+
             if self.current_player == self.players[-1]:
+                log.msg("last player")
                 self.river_rounds = self.river_rounds + 1
                 self.current_player = self.players[0]
-            Game.verb_end_turn(self, self.current_player)
+            else:
+                # find next player
+                for n,i in enumerate(self.players):
+                    if i > player:
+                        break
+
+                self.current_player = self.players[n]
+
+            log.msg("calling base class")
+            log.msg("done")
+            return ""
         else:
+            log.msg("wrong player")
             raise GameError("Not your turn!")
 
-    def verb_fold(self):
+    def verb_fold(self, player):
         if self.current_player == player:
             self.players.remove(self.current_player)
             self.verb_end_turn()# end their turn for them
@@ -348,7 +377,7 @@ class Poker(Game):
             raise GameError("Not your turn!")
 
 
-    def verb_score(self): # not sure how this one will work
+    def verb_score(self, player): # not sure how this one will work
         # make sure this is only return at the end
         # last player or everyone has gone in the 3rd round so it's the 4th
         log.msg("score")
@@ -373,7 +402,7 @@ class Poker(Game):
             raise GameError("Not end of game. Scores not available")
         
 
-    def verb_bet(self, amount):
+    def verb_bet(self, player, amount):
         #
         # BROKEN!!!!
         #self.gs.takeBids(player, bid_amount)
@@ -394,16 +423,22 @@ class Poker(Game):
         else:
             raise GameError("Not your turn!")
 
-
-    def verb_river(self):
-        if self.river_rounds == 0:
+    def verb_river(self, player):
+        if self.river_rounds == -1:
             return []
-        elif self.river_rounds == 1:
+        elif self.river_rounds == -1:
             return self.river[:3]
-        elif self.river_rounds == 2:
+        elif self.river_rounds == -1:
             return self.river[:4]
         else: # return is 3 or 4 (round 4 is everyone done)
             return self.river
+
+    def verb_update(self, player):
+        if self.current_player == player:
+            return [True, self.bets]
+
+        else:
+            return [False, self.bets]
 
 
 GAMES_LIST = {"poker":Poker}
@@ -460,7 +495,9 @@ class API(Resource):
             d["success"] = True
             d["message"] = "Succesfully handled api request."
             d["result"] = result
-            
+            log.msg("result asdfasdfasfasf")
+            log.msg(str(d))
+            log.msg(str(result))
             d = json.dumps(d)
 
         return d
