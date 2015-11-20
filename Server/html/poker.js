@@ -15,7 +15,7 @@ var gameId = "";
 var gameIDURL = "&game_id=" + gameId;
 
 function login(){
-		//parser();
+		parser();
         var verb = "player_number";
         playerNumber=$.post(url + verb + gameIDURL);
         verb = "get_hand";
@@ -75,18 +75,17 @@ function wait(timeToWait){
 }
 
 function parser(){
-	var url = window.location.pathname;
+	var url = location.pathname;
 	var stringToParse = url.split('?')[1];
 	var splitVals = stringToParse.split("&");
 	var splitAgain;
 	//Empty Javascript object
 	var arguements = {};
 	for( i = 0; i < splitVals.length;i++){
-		splitAgain = val.split('=');
+		splitAgain = splitVals[i].split('=');
 		arguements[splitAgain[0]] = splitagain[1];
 	}
 	gameID = arguements["gid"];
-	$("#errorlog").html(gameID);
 	gameIDURL = "&game_id=" + gameId;
 }
 
