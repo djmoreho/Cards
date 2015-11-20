@@ -1,6 +1,6 @@
 
 //url the ajax stuff posts to
-var url ="127.0.0.01:8080/api?game=poker&action=";
+var url ="127.0.0.1:8080/api?game=poker&action=";
 //All the other stuff
 var cardsPath = "card_pics/";
 var playerHand = [];
