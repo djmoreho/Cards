@@ -12,16 +12,16 @@ var pot = 0;
 var loggedIn = false;
 var ready = false;
 var gameId = "";
-var gameIDURL = "";
+var gameIDURL = "&game_id=" + gameId;
 
 function login(){
+		//parser();
         var verb = "player_number";
         playerNumber=$.post(url + verb + gameIDURL);
         verb = "get_hand";
         hand = $.post(url + verb + gameIDURL);
-        
-        playerHand.append(hand[0]);
-        playerHand.append(hand[1]);
+        playerHand.push(hand[0]);
+        playerHand.push(hand[1]);
         $(".p3c1").attr('src',cardsPath + playerHand[0] + ".png");
         $(".p3c2").attr('src',cardsPath + playerHand[1] + ".png");
         loggedIn=true;
@@ -45,7 +45,7 @@ function call(){
 
 function raise(raiseAmount){
         //Need an api call to check if its the player's turn.
-        var verb = "bet&amount=" + str(raiseAmount); 
+        var verb = "bet&amount=" + raiseAmount; 
         $.post(url + verb + gameIDURL);
         verb = "end_turn";
         $.post(url + verb + gameIDURL);
@@ -54,13 +54,14 @@ function raise(raiseAmount){
 function theGame(){
         loggedIn = login();
         
-        while(!gameOver){
-            refresh();
+        /*while(!gameOver){
+            //refresh();
             //wait a second
-            wait(1000000);
+            //wait(1000000);
         }
         gameover=false;
         reset();
+        */
 }
 
 function wait(timeToWait){
@@ -84,7 +85,8 @@ function parser(){
 		splitAgain = val.split('=');
 		arguements[splitAgain[0]] = splitagain[1];
 	}
-	gameID = arguements[game_id];
+	gameID = arguements["gid"];
+	$("#errorlog").html(gameID);
 	gameIDURL = "&game_id=" + gameId;
 }
 
