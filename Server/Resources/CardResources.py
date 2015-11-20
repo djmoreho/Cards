@@ -440,6 +440,52 @@ class Poker(Game):
         else:
             return [False, self.bets]
 
+class War(Game):
+    verbs = ["play", "Resolve"]
+    name = "war"
+
+    def __init__(self):
+        self.deck = generateDeck()
+        self.p1deck = []
+        self.p2deck = []
+        while len(deck) != 0:
+            p1deck.append(deck.pop())
+            p2deck.append(deck.pop())
+
+#Returns -1 for tie, 1 or 2 for player winning, 0 for continue
+    def verb_resolve(self):
+        if getValue(self.cards1[-1] > getValue(self.cards2[-1]):
+            while len(eslf.cards1) != 0:
+                self.p1deck.insert(0,self.cards1.pop())
+            while len(self.cards2) != 0:
+                self.p1deck.insert(0,self.cards2.pop())
+            if len(self.p2deck) == 0:
+                return 1
+        elif getValue(self.cards2[-1] > getValue(self.cards1[-1]):
+            while len(self.cards1) != 0:
+                self.p2deck.insert(0,self.cards1.pop())
+            while len(self.cards2) != 0:
+                self.p2deck.insert(0,self.cards2.pop())
+            if len(self.p1deck) == 0:
+                return 2
+        else:
+            for x in range(3):
+                isTie = True
+                if len(self.p1deck) != 0:
+                    isTie = False #if both players expend entire decks and no winner
+                    self.cards1.append(self.p1deck.pop())
+                if len(self.p2deck) != 0:
+                    isTie = False
+                    self.cards2.append(self.p2deck.pop())
+                if isTie:
+                    return -1 #Go buy a lottery ticket
+            return 0
+
+    def verb_play(self):
+        self.cards1.append(p1deck.pop())
+        self.cards2.append(p2deck.pop())
+        return [self.cards1[-1], self.cards2[-1]]
+
 
 GAMES_LIST = {"poker":Poker}
 
