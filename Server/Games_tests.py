@@ -1,11 +1,11 @@
 ### Games_tests.py
 
 import unittest
-from Games import Poker, GameError
+from Games import Poker, War, GameError
 import sys
 import os
 
-class PokerScore(unittest.TestCase):
+class PokerTests(unittest.TestCase):
     
     def test_normal_game(self):
         p = Poker()
@@ -231,7 +231,76 @@ class PokerScore(unittest.TestCase):
                       p.hands)
                       
         self.assertEqual(p.verb("score", 1), winner)
+        
 
+class Wars(unittest.TestCase):
+    
+    def test_normal_War(self):
+    	w = War()
+    	pn, hand, dis = w.add_player()
+        self.assertEqual(pn, 1)
+        self.assertEqual(len(hand), 26)
+        pn, hand, dis = w.add_player()
+        self.assertEqual(pn, 2)
+        self.assertEqual(len(hand), 26)
+        w.hands[0] = ["HA", "D3", "C3"]
+        w.hands[1] = ["H2", "S2", "S4"]
+        w.verb("update", 1)
+        w.verb("update", 2)
+        self.assertEqual(len(w.hands[0]), 2)
+        self.assertEqual(len(w.hands[1]), 2)
+        w.verb("update", 1)
+        w.verb("update", 2)
+        self.assertEqual(len(w.hands[0]), 1)
+        self.assertEqual(len(w.hands[1]), 1)
+        w.verb("update", 1)
+        w.verb("update", 2)
+        self.assertEqual(len(w.hands[0]), 2)
+        self.assertEqual(len(w.hands[1]), 2)
+    
+    def test_endgame(self):
+    	w = War()
+    	w.add_player()
+    	w.add_player()
+    	w.hands[0] = ["HA", "D3", "C4"]
+        w.hands[1] = ["H2", "S2", "S3"]
+        w.verb("update", 1)
+        w.verb("update", 2)
+        self.assertEqual(len(w.hands[0]), 2)
+        self.assertEqual(len(w.hands[1]), 2)
+        w.verb("update", 1)
+        w.verb("update", 2)
+        self.assertEqual(len(w.hands[0]), 1)
+        self.assertEqual(len(w.hands[1]), 1)
+        w.verb("update", 1)
+        self.assertEqual(w.verb("update", 2), (-1, 0, None))
+        self.assertEqual(len(w.hands[0]), 4)
+        self.assertEqual(len(w.hands[1]), 0)
+    
+    def test_War(self):
+    	w = War()
+    	w.add_player()
+    	w.add_player()
+    	w.hands[0] = ["C4", "HA", "D2", "D3", "C3"]
+        w.hands[1] = ["C2", "H2", "D3", "S2", "S3"]
+        w.verb("update", 1)
+        w.verb("update", 2)
+        self.assertEqual(len(w.hands[0]), 1)
+        self.assertEqual(len(w.hands[1]), 1)
+        w.verb("update", 1)
+        self.assertEqual(w.verb("update", 2), (-1, 0, None))
+        self.assertEqual(len(w.hands[0]), 8)
+        self.assertEqual(len(w.hands[1]), 0)
+    
+    def test_error(self):
+    	w = War()
+    	w.add_player()
+    	w.add_player()
+    	w.hands[0] = ["HA", "D3", "C4"]
+        w.hands[1] = ["H2", "S2", "S3"]
+        
+        #make sure 2 can't go out of turn
+        self.assertRaises(GameError, w.verb, "update", 2)
         
 if __name__ == '__main__':
     unittest.main()

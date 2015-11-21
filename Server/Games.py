@@ -1,5 +1,6 @@
 ## Games.py
 from twisted.python import log
+import random
 class GameError(Exception):
     '''Any game error'''
 
@@ -15,15 +16,8 @@ class Game(object):
         self.current_player = 1
 
     def verb(self, verb, player, *args, **kw):      
-        print verb
-        log.msg("--------------")
-        log.msg(verb)
-        print verb
         self.called_verbs.append(verb.lower())
         s = "verb_%s" % verb.lower()
-        log.msg("--------------")
-        log.msg(verb)
-        log.msg(s)
 
         h = getattr(self, s)
 
@@ -31,8 +25,6 @@ class Game(object):
             ret = h(player, *args, **kw)
             return ret
         except TypeError:
-            log.msg("Incorrect number of arguments for function.")
-            log.err()
             raise GameError("Incorrect arguments")
             
 
@@ -43,9 +35,6 @@ class Game(object):
             if i not in c:
                 raise GameError("You have not done everything you need to.")
         return
-
-    def verb_EX(self, player):
-        print ex # do your stuff
 
     def verb_end_turn(self, player):
         self.check_musts(player)
@@ -58,7 +47,7 @@ class Game(object):
 
 
 from TexasHoldem import score
-from TexasHoldem import getHands, generateDeck
+from TexasHoldem import getHands, generateDeck, getValue
 
 
 class Poker(Game):
@@ -123,18 +112,11 @@ class Poker(Game):
         hand.append(self.deck.pop()) # god help me
         self.hands.append(hand)
 
-        log.msg("add_player")
-        log.msg("hand: %s" % str(hand))
-        log.msg("bet: 5000")
-        log.msg("hands: %s" % str(self.hands))
-        log.msg("bets: %s" % str(self.bets))
-
         return [self.players[-1], hand, 5000]
 
     ### Game Verbs    
 
     def check_musts(self, player):
-        print "Checking..."
         # if either are in there
         if "bet" in self.called_verbs:
             return
@@ -177,11 +159,7 @@ class Poker(Game):
         if self.current_player == player:
             self.verb_end_turn(player)# end their turn for them
             new_player_index = self.players.index(self.current_player)
-            print self.players
-            print "REMOVING"
-            print self.current_player
             self.players.remove(self.players[new_player_index - 1])
-            print self.players
 
         else:
             raise GameError("Not your turn!")
@@ -190,7 +168,6 @@ class Poker(Game):
     def verb_score(self, player): # not sure how this one will work
         # make sure this is only return at the end
         # last player or everyone has gone in the 3rd round so it's the 4th
-        log.msg("score")
 
         # this does allow the first client to get their score
         # when they first join
@@ -214,16 +191,10 @@ class Poker(Game):
 
     def verb_bet(self, player, amount):
         #
-        # BROKEN!!!!
         #self.gs.takeBids(player, bid_amount)
         if self.current_player == player:
             amount = int(amount)
-            print "Bet " + str(self.bets)
-            print "Players " + str(self.players)
-            print "Player" + str(self.current_player)
             b = self.bets[self.current_player - 1]
-            print "Amount player has " + str(b)
-            print "Amount being bet " + str(amount)
             if amount > b:
                 # remove the bad bet
                 self.called_verbs.pop(-1)
@@ -256,5 +227,161 @@ class Poker(Game):
         else:
             return [False, self.bets]
 
+class War(Game):
+    verbs = ["update"]
+    name = "war"
 
-GAMES_LIST = {"poker":Poker}
+    def __init__(self):
+        Game.__init__(self)
+        self.deck = generateDeck()
+        self.hands = []
+        self.discard = []
+        self.pool = []
+        self.intial_players = 0
+        # we cheat here with a just horrible hack
+        # because all the cards are randomly distributed
+        # we can actually calculate the river first
+        # and have 'false' animation interactions
+        # god help me
+    
+    def __str__(self):
+        return """War(CurrentPlayer=%s,\n
+                        IntialPlayers=%s,\n
+                        Players=%s,\n
+                        Hands=%s,\n
+                        Discard=%s,\n
+                        Pool=%s)""" % (self.current_player,
+                                         self.intial_players,
+                                         len(self.players),
+                                         self.hands,
+                                         self.discard,
+                                         self.pool)
+
+     ## add player, intialize player to game
+
+    def add_player(self):
+        """
+        returns: [player number, hand, discard]
+        """
+        if len(self.deck) < 26:
+            raise GameError("Not enough cards")
+
+        self.intial_players = self.intial_players + 1
+
+        try:
+            self.players.append(self.players[-1] + 1)
+        except IndexError:
+            self.players.append(1)
+
+        hand = []
+        dis = []
+        for i in xrange(26):
+            hand.append(self.deck.pop()) # god help me
+        self.hands.append(hand)
+        self.discard.append(dis)
+
+        return [self.players[-1], hand, dis]
+    
+    ### Game Verbs    
+
+    '''def check_musts(self, player):
+        if "update" in self.called_verbs:
+            return
+        raise GameError("You have not done everything you need to do.")'''
+    
+    def verb_player_number(self, player):
+        return self.current_player
+
+    def verb_get_player_details(self, player):
+        h = self.hands[player - 1][-1]
+        p = player
+
+        return [h, p]
+    
+    def verb_update(self, player):
+    	ret = False
+        if self.current_player == player:
+        	card = self.playCard(player)
+        	'''if len(card) != 2:
+        		return -1, 0, None'''
+        	self.pool.append(card)
+        	if self.current_player == 1:
+        		self.current_player = 2
+        	else:
+        		self.current_player = 1
+        		ret = self.war(self.pool[0], self.pool[1])
+        		self.pool = []
+        		if len(self.hands[0]) == 0 and len(self.discard[0]) == 0:
+        			return -1, 0, 52, None
+        		elif len(self.hands[1]) == 0 and len(self.discard[1]) == 0:
+        			return -1, 52, 0, None
+        	if not ret:
+        		top = self.hands[player - 1][-1]
+        		ret = self.current_player
+        	else:
+        		top = None
+        		ret = -1
+        	return [ret, len(self.hands[0]) + len(self.discard[0]), len(self.hands[1]) + len(self.discard[1]), top]
+        else:
+    		raise GameError("Not your turn!")
+    
+    def playCard(self, player):
+		if len(self.hands[player - 1]) > 0:
+			card = self.hands[player - 1].pop()
+			if len(self.hands[player - 1]) == 0:
+				if len(self.discard[player - 1]) > 0:
+					self.hands[player - 1] = self.discard[player - 1]
+					random.shuffle(self.hands[player - 1])
+					self.discard[player - 1] = []
+		elif len(self.discard[player - 1]) > 0:
+			self.hands[player - 1] = self.discard[player - 1]
+			self.discard[player - 1] = []
+		else:
+			return "Game Over"
+		return card
+    
+    def war(self, card1, card2):
+        if getValue(card1) > getValue(card2):
+            #print "1"
+            for card in self.pool:
+            	#print card
+                self.discard[0].append(card)
+            #print
+        elif getValue(card1) < getValue(card2):
+            #print "2"
+            for card in self.pool:
+            	#print card
+                self.discard[1].append(card)
+            #print
+        else:
+            for i in xrange(2):
+                self.pool.append(self.playCard(1))
+                self.pool.append(self.playCard(2))
+            finalCard1 = self.playCard(1)
+            if len(finalCard1) != 2:
+            	return True
+            finalCard2 = self.playCard(2)
+            if len(finalCard2) != 2:
+            	return True
+            self.pool.append(finalCard1)
+            self.pool.append(finalCard2)
+            self.war(finalCard1, finalCard2)
+        return False
+        
+    
+    '''def verb_end_turn(self, player):
+        if self.current_player == player:
+            self.check_musts(player)
+            if self.current_player == 1:
+                self.current_player = 2
+            else:
+                self.current_player = 1
+                war(self.pool[0], self.pool[1])
+                pool = []
+            return None
+        else:
+            raise GameError("Not your turn!")'''
+
+
+
+GAMES_LIST = {"poker":Poker, "war":War}
