@@ -1,6 +1,7 @@
 ## Games.py
-from twisted.python import log
 import random
+from twisted.python import log
+
 class GameError(Exception):
     '''Any game error'''
 
@@ -15,14 +16,13 @@ class Game(object):
         self.players = []
         self.current_player = 1
 
-    def verb(self, verb, player, *args, **kw):      
-        self.called_verbs.append(verb.lower())
+    def verb(self, verb, player, *args, **kw):
         s = "verb_%s" % verb.lower()
-
         h = getattr(self, s)
 
         try:
             ret = h(player, *args, **kw)
+            self.called_verbs[player - 1].append(verb.lower())
             return ret
         except TypeError:
             raise GameError("Incorrect arguments")
@@ -30,11 +30,14 @@ class Game(object):
 
 
     def check_musts(self, player):
-        c = list(called_verbs)
+        c = list(self.called_verbs[player-1])
         for i in musts:
             if i not in c:
                 raise GameError("You have not done everything you need to.")
         return
+
+    def verb_EX(self, player):
+        print ex # do your stuff
 
     def verb_end_turn(self, player):
         self.check_musts(player)
@@ -47,7 +50,7 @@ class Game(object):
 
 
 from TexasHoldem import score
-from TexasHoldem import getHands, generateDeck, getValue
+from TexasHoldem import getHands, generateDeck
 
 
 class Poker(Game):
@@ -61,6 +64,7 @@ class Poker(Game):
         self.deck = generateDeck()
         self.hands = []
         self.river = []
+        self.called_verbs = []
         self.intial_players = 0
         # we cheat here with a just horrible hack
         # because all the cards are randomly distributed
@@ -106,6 +110,8 @@ class Poker(Game):
         except IndexError:
             self.players.append(1)
 
+        self.called_verbs.append([])
+
         self.bets.append(5000)
         hand = []
         hand.append(self.deck.pop()) # god help me
@@ -118,13 +124,14 @@ class Poker(Game):
 
     def check_musts(self, player):
         # if either are in there
-        if "bet" in self.called_verbs:
+        if "bet" in self.called_verbs[player-1]:
             return
         # need this as check musts ends the turn
         # and we want to allow fold to end a turn
         # so allo check musts to pass    
-        if "fold" in self.called_verbs:
+        if "fold" in self.called_verbs[player-1]:
             return
+
         raise GameError("You have not done everything you need to do.")
 
     def verb_player_number(self, player):
@@ -140,6 +147,8 @@ class Poker(Game):
     def verb_end_turn(self, player):
         if self.current_player == player:
             self.check_musts(player)
+            # past check musts
+            self.called_verbs[player-1] = []
             if self.current_player == self.players[-1]:
                 self.river_rounds = self.river_rounds + 1
                 self.current_player = self.players[0]
@@ -157,6 +166,7 @@ class Poker(Game):
 
     def verb_fold(self, player):
         if self.current_player == player:
+            self.called_verbs[player-1].append("fold")
             self.verb_end_turn(player)# end their turn for them
             new_player_index = self.players.index(self.current_player)
             self.players.remove(self.players[new_player_index - 1])
@@ -174,7 +184,7 @@ class Poker(Game):
         last_player_left = (len(self.players) == 1 and self.intial_players > 1) # make sure it
                                                                                 # isn't the only player to have joined
 
-        if last_player_left or self.river_rounds == 4:
+        if last_player_left or self.river_rounds >= 3:
             fold = list(self.bets)
             for n, i in enumerate(fold):
                 fold[n] = False # false means folded; god help me
@@ -191,20 +201,19 @@ class Poker(Game):
 
     def verb_bet(self, player, amount):
         #
+        # BROKEN!!!!
         #self.gs.takeBids(player, bid_amount)
         if self.current_player == player:
             amount = int(amount)
             b = self.bets[self.current_player - 1]
-            if amount > b:
+            if amount > b or amount < 0:
                 # remove the bad bet
-                self.called_verbs.pop(-1)
-                raise GameError("Too big of a bet!")
+                raise GameError("Not a valid bet!")
 
             b = b - amount
             self.bets[self.current_player - 1] = b
             return b
         else:
-            self.called_verbs.pop(-1) # remove the bad bet
             raise GameError("Not your turn!")
 
     def verb_river(self, player):
@@ -217,7 +226,7 @@ class Poker(Game):
         elif self.river_rounds == 2:
             return self.river[:4]
             
-        else: # return is 3 or 4 (round 4 is everyone done)
+        else: 
             return self.river
 
     def verb_update(self, player):
@@ -226,6 +235,8 @@ class Poker(Game):
 
         else:
             return [False, self.bets]
+
+from TexasHoldem import getValue
 
 class War(Game):
     verbs = ["update"]
@@ -279,6 +290,8 @@ class War(Game):
             hand.append(self.deck.pop()) # god help me
         self.hands.append(hand)
         self.discard.append(dis)
+
+        self.called_verbs.append([])
 
         return [self.players[-1], hand, dis]
     

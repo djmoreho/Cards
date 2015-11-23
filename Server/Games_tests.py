@@ -178,6 +178,9 @@ class PokerTests(unittest.TestCase):
         ## test too big of a bet for 1
         self.assertRaises(GameError, p.verb, "bet", 1, amount=10000)
 
+        ## test too small of a bet
+        self.assertRaises(GameError, p.verb, "bet", 1, amount=-900)
+
         ## test that you must bet for 1
         self.assertRaises(GameError, p.verb, "end_turn", 1)
         
@@ -231,7 +234,40 @@ class PokerTests(unittest.TestCase):
                       p.hands)
                       
         self.assertEqual(p.verb("score", 1), winner)
-        
+
+    def test_negative_bet_river(self):
+        p = Poker()
+        pn, hand, amount = p.add_player()
+        self.assertEqual(pn, 1)
+        self.assertEqual(len(hand), 2)
+
+        # have the first person bet positive
+
+        self.assertRaises(GameError, p.verb, "bet", 2, a=1, b=2)
+        self.assertRaises(GameError, p.verb, "end_turn", 1)
+        self.assertEqual(len(p.verb("river", 1)), 0)
+
+
+    def test_negative_bet_river2(self):
+        p = Poker()
+        pn, hand, amount = p.add_player()
+        self.assertEqual(pn, 1)
+        self.assertEqual(len(hand), 2)
+
+        pn, hand, amount = p.add_player()
+        self.assertEqual(pn, 2)
+        self.assertEqual(len(hand), 2)
+
+        # have the first person bet positive
+
+        self.assertEquals(p.verb("bet", 1, amount=1000), 4000)
+        self.assertEquals(p.verb("end_turn", 1), None)
+        self.assertRaises(GameError, p.verb, "bet", 2, amount=-1000)
+        self.assertRaises(GameError, p.verb, "end_turn", 2)
+        self.assertEquals(len(p.verb("river", 2)), 0)
+
+
+
 
 class Wars(unittest.TestCase):
     
@@ -273,7 +309,7 @@ class Wars(unittest.TestCase):
         self.assertEqual(len(w.hands[0]), 1)
         self.assertEqual(len(w.hands[1]), 1)
         w.verb("update", 1)
-        self.assertEqual(w.verb("update", 2), (-1, 0, None))
+        self.assertEqual(w.verb("update", 2), (-1, 52, 0, None))
         self.assertEqual(len(w.hands[0]), 4)
         self.assertEqual(len(w.hands[1]), 0)
     
@@ -288,7 +324,7 @@ class Wars(unittest.TestCase):
         self.assertEqual(len(w.hands[0]), 1)
         self.assertEqual(len(w.hands[1]), 1)
         w.verb("update", 1)
-        self.assertEqual(w.verb("update", 2), (-1, 0, None))
+        self.assertEqual(w.verb("update", 2), (-1, 52, 0, None))
         self.assertEqual(len(w.hands[0]), 8)
         self.assertEqual(len(w.hands[1]), 0)
     

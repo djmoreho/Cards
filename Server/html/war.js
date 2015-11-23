@@ -21,7 +21,7 @@ function login(){
       async: false,
       dataType: 'json',
       success: function(data){
-                    alert(data);
+                    console.log(data);
                     result = data;
                }
     });

@@ -24,6 +24,14 @@ Create(root)
 
 # listen
 if __name__ == "__main__":
+    # load private key
+    import import OpenSSL.crypto  # py open ssl
+    pkey = crypto.load_privatekey(crypto.FILETYPE_PEM,
+                                  samplePEMKey,
+                                  passphrase=)
+
+
+
     context_factory = ssl.DefaultOpenSSLContextFactory(
         "",
         "", 
